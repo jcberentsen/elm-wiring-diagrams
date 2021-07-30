@@ -3,11 +3,12 @@
     "name": "jcberentsen/elm-wiring-diagrams",
     "summary": "A package for SVG wiring-diagrams",
     "license": "BSD-3-Clause",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "exposed-modules": [
         "WiringDiagram",
         "WiringDiagram.Layout",
-        "WiringDiagram.Svg"
+        "WiringDiagram.Svg",
+        "WiringDiagram.Examples"
     ],
     
     "source-directories": [
