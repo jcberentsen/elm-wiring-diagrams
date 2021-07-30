@@ -1,16 +1,48 @@
-module Common.WiringDiagram.Svg exposing (..)
+module WiringDiagram.Svg exposing
+    ( view, Viewport, layoutToSvg, diagramToSvg
+    , smallViewport, mediumViewport, wideViewport, largeViewport
+    , SvgConfig, layoutToSvgWithConfig
+    )
 
-import Common.WiringDiagram exposing (..)
-import Common.WiringDiagram.Layout exposing (..)
-import Common.WiringDiagram.Layout.Box exposing (..)
-import Common.WiringDiagram.Svg.Arrow exposing (arrow)
-import Element exposing (Element)
+{-| Convert a Layout of a WireDiagram to SVG
+
+@docs view, Viewport, layoutToSvg, diagramToSvg
+
+
+## Viewport defaults
+
+@docs smallViewport, mediumViewport, wideViewport, largeViewport
+
+
+# Customization
+
+@docs SvgConfig, layoutToSvgWithConfig
+
+-}
+
+import Html exposing (Html)
 import Svg exposing (Svg, svg)
 import Svg.Attributes exposing (..)
+import WiringDiagram exposing (..)
+import WiringDiagram.Layout exposing (..)
+import WiringDiagram.Layout.Box exposing (..)
+import WiringDiagram.Svg.Arrow exposing (arrow)
 
 
-viewSvg : Viewport -> List (Svg msg) -> Element msg
-viewSvg vp svgItems =
+{-| Placement and dimensions of a Viewport to render SVG inside
+-}
+type alias Viewport =
+    { width : Float
+    , height : Float
+    , xMin : Float
+    , yMin : Float
+    }
+
+
+{-| Render a list of Svg items in a viewport to Html
+-}
+view : Viewport -> List (Svg msg) -> Html msg
+view vp svgItems =
     let
         w =
             String.fromFloat vp.width
@@ -18,21 +50,24 @@ viewSvg vp svgItems =
         h =
             String.fromFloat vp.height
     in
-    Element.html <|
-        svg
-            [ width w
-            , height h
-            , viewBox <| "0 0 " ++ w ++ " " ++ h
-            ]
-            svgItems
+    svg
+        [ width w
+        , height h
+        , viewBox <| "0 0 " ++ w ++ " " ++ h
+        ]
+        svgItems
 
 
+{-| Preliminary way to control how labels turn into String for SVG
+-}
 type alias SvgConfig a =
     { toLabelString : a -> String
     , dummy : ()
     }
 
 
+{-| Render a Layout to Svg
+-}
 layoutToSvg : Layout b -> Svg msg
 layoutToSvg =
     layoutToSvgWithConfig
@@ -49,6 +84,8 @@ toSvgTransform t =
             ++ ")"
 
 
+{-| Render a Layout to Svg with configurable labeling
+-}
 layoutToSvgWithConfig : SvgConfig a -> Layout a -> Svg msg
 layoutToSvgWithConfig svgConfig l =
     case l of
@@ -79,6 +116,8 @@ layoutToSvgWithConfig svgConfig l =
             arrow arr
 
 
+{-| Shortcut render a Diagram (via Layout) to Svg
+-}
 diagramToSvg : Diagram a -> Svg msg
 diagramToSvg d =
     layoutToSvg <| layoutDiagram d
@@ -109,8 +148,6 @@ box svgConfig b =
                     }
                     (svgConfig.toLabelString label)
 
-            -- b.label
-            -- "boxLabel"
             _ ->
                 Svg.g [] []
         ]
@@ -123,14 +160,7 @@ svgBoxText pos label =
         , y <| String.fromFloat pos.y
         , textAnchor "middle"
         , stroke "black"
-
-        -- , strokeOpacity "0.5"
         , fontSize "16"
-        , style "font-family:CiscoSansTT"
-
-        -- , transform "scale(1, 1)"
-        -- , textLength <| (String.fromInt <| 4 * r // 3) ++ "px"
-        --, lengthAdjust "spacingAndGlyphs"
         ]
         [ Svg.text label ]
 
@@ -140,21 +170,29 @@ origin =
     { width = 1, height = 100, xMin = 0, yMin = 0 }
 
 
+{-| A small viewport of 200x200
+-}
 smallViewport : { width : number, height : number, xMin : number, yMin : number }
 smallViewport =
     { origin | width = 200, height = 200 }
 
 
+{-| A wide but low viewport of 1200x150
+-}
 wideViewport : { width : number, height : number, xMin : number, yMin : number }
 wideViewport =
     { origin | width = 1200, height = 150 }
 
 
+{-| A medium sized viewport (640x480)
+-}
 mediumViewport : { width : number, height : number, xMin : number, yMin : number }
 mediumViewport =
     { origin | width = 640, height = 480 }
 
 
+{-| A larger sized viewport (1024x768)
+-}
 largeViewport : { width : number, height : number, xMin : number, yMin : number }
 largeViewport =
     { origin | width = 1024, height = 768 }

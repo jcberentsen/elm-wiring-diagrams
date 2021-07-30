@@ -1,12 +1,11 @@
-module Common.WiringDiagram.Svg.Arrow exposing (arrow)
+module WiringDiagram.Svg.Arrow exposing (arrow)
 
-import Common.Vec2 exposing (..)
-import Common.WiringDiagram exposing (..)
-import Common.WiringDiagram.Layout exposing (..)
-import Element exposing (Element)
-import Svg exposing (Svg, svg)
+import Svg exposing (Svg)
 import Svg.Attributes exposing (..)
-import Svg.PathD exposing (Segment(..), l, m, pathD)
+import Svg.PathD exposing (Segment(..), pathD)
+import WiringDiagram exposing (..)
+import WiringDiagram.Layout exposing (..)
+import WiringDiagram.Vec2 exposing (..)
 
 
 

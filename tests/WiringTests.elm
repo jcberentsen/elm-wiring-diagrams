@@ -109,7 +109,7 @@ suite =
         , describe "Compose vertically" <|
             let
                 ab =
-                    inParalell [ a, b ]
+                    inParallel [ a, b ]
 
                 computedLayout =
                     layoutDiagram ab
@@ -176,7 +176,7 @@ suite =
             \_ ->
                 inSequence
                     [ initWrap <|
-                        inParalell
+                        inParallel
                             [ source "a" 1
                             , source "b" 1 |> offsetPorts 1
                             ]
@@ -186,8 +186,6 @@ suite =
                     |> traverseArrows identity
                     |> List.length
                     |> Expect.equal 4
-        , fuzz (list int) "Last as list" <|
-            \l -> D.lastAsList (l ++ [ 1 ]) |> Expect.equal [ 1 ]
         , test "Center boxes vertically ab -> c" <|
             \_ ->
                 inSequence

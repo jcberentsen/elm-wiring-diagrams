@@ -2,12 +2,12 @@ module WiringDiagram.Layout exposing
     ( Layout(..)
     , layoutDiagram
     , layoutDiagramWithConfig
-    , Polarity(..), Pos, Transform, Viewport, arrowExtent, boxFromExtent, outside, par, portPositionsOfBox
+    , Polarity(..), Pos, Transform, arrowExtent, portPositionsOfBox
     )
 
-{-| This purpose of this module is to convert WiringDiagram values to Layout
+{-| Layout of WiringDiagram values
 
-Typically a Layout can then be converted to SVG for display
+Typically a Layout can be converted to SVG for display
 
 
 # Definition
@@ -24,12 +24,18 @@ Typically a Layout can then be converted to SVG for display
 
 @docs layoutDiagramWithConfig
 
+
+# Misc
+
+@docs Polarity, Pos, Transform, arrowExtent, portPositionsOfBox
+
 -}
 
 import Dict
 import WiringDiagram exposing (..)
-import WiringDiagram.Layout.Box as Box exposing (..)
+import WiringDiagram.Layout.Box exposing (..)
 import WiringDiagram.Layout.Config as Config exposing (Config)
+import WiringDiagram.Layout.Extent exposing (Extent, hull)
 import WiringDiagram.Vec2 as Vec exposing (..)
 
 
@@ -50,12 +56,8 @@ type Layout a
         }
 
 
-type alias Extent =
-    { lo : Vec2
-    , hi : Vec2
-    }
-
-
+{-| A type for Positions
+-}
 type alias Pos =
     Vec2
 
@@ -235,21 +237,6 @@ par config d =
         }
 
 
-{-| Make a Box from an Extent given an optional label a
--}
-boxFromExtent : Maybe a -> Extent -> Box a
-boxFromExtent a e =
-    let
-        box =
-            Box.init a
-    in
-    { box
-        | lo = e.lo
-        , width = e.hi.x - e.lo.x
-        , height = e.hi.y - e.lo.y
-    }
-
-
 bound : Layout a -> Extent
 bound l =
     case l of
@@ -269,12 +256,14 @@ bound l =
                         _ ->
                             { lo = Vec2 0 0, hi = Vec2 0 0 }
             in
-            combineExtents <| exteriorBound :: List.map bound g.interior
+            hull <| exteriorBound :: List.map bound g.interior
 
         Arrow arr ->
             arrowExtent arr
 
 
+{-| Make an extent for an Arrow. This stupidly assumes the tail is < head
+-}
 arrowExtent : { a | tail : b, head : c } -> { lo : b, hi : c }
 arrowExtent arr =
     { lo = arr.tail
@@ -299,33 +288,28 @@ transformExtent tx e =
 
 -- Hm, not too good. Is extent a monoid?
 -- Perhaps interval algebra is better here?
-
-
-nullExtent : { lo : { x : number, y : number }, hi : { x : number, y : number } }
-nullExtent =
-    { lo = { x = 0, y = 0 }
-    , hi = { x = 0, y = 0 }
-    }
-
-
-combineExtents : List Extent -> Extent
-combineExtents ls =
-    let
-        combine b acc =
-            let
-                lo =
-                    { x = min b.lo.x acc.lo.x
-                    , y = min b.lo.y acc.lo.y
-                    }
-
-                hi =
-                    { x = max b.hi.x acc.hi.x
-                    , y = max b.hi.y acc.hi.y
-                    }
-            in
-            { acc | lo = lo, hi = hi }
-    in
-    List.foldr combine nullExtent ls
+-- nullExtent : { lo : { x : number, y : number }, hi : { x : number, y : number } }
+-- nullExtent =
+--     { lo = { x = 0, y = 0 }
+--     , hi = { x = 0, y = 0 }
+--     }
+-- combineExtents : List Extent -> Extent
+-- combineExtents ls =
+--     let
+--         combine b acc =
+--             let
+--                 lo =
+--                     { x = min b.lo.x acc.lo.x
+--                     , y = min b.lo.y acc.lo.y
+--                     }
+--                 hi =
+--                     { x = max b.hi.x acc.hi.x
+--                     , y = max b.hi.y acc.hi.y
+--                     }
+--             in
+--             { acc | lo = lo, hi = hi }
+--     in
+--     List.foldr combine nullExtent ls
 
 
 shift : Transform -> Layout a -> Layout a
@@ -371,19 +355,6 @@ heightOf l =
 type Polarity
     = In
     | Out
-
-
-type alias Viewport =
-    { width : Float
-    , height : Float
-    , xMin : Float
-    , yMin : Float
-    }
-
-
-outside : Layout a -> Layout a
-outside l =
-    l
 
 
 {-| Grow the width and height of a Box. Does not move the local origin.

@@ -22,6 +22,18 @@ type alias BoxConfig =
     Box String
 
 
+init : Maybe a -> Box a
+init a =
+    { label = a
+    , lo = Vec2 0 0
+    , width = 64
+    , height = 36
+    , radius = 1
+    , inPorts = []
+    , outPorts = []
+    }
+
+
 type alias Box a =
     { label : Maybe a
     , lo : Vec2
@@ -72,9 +84,15 @@ compareBoxes ( a, b ) =
         LeftOf
 
 
-boxFromExtent : Extent -> Box a
-boxFromExtent e =
-    { defaultBox
+{-| Make a Box from an Extent given an optional label a
+-}
+boxFromExtent : Maybe a -> Extent -> Box a
+boxFromExtent a e =
+    let
+        box =
+            init a
+    in
+    { box
         | lo = e.lo
         , width = e.hi.x - e.lo.x
         , height = e.hi.y - e.lo.y
@@ -104,20 +122,3 @@ pad v b =
 boxify : Diagram a -> Box a
 boxify (Diagram d) =
     init d.label |> setPorts d.inPorts d.outPorts
-
-
-defaultBox : Box a
-defaultBox =
-    init Nothing
-
-
-init : Maybe a -> Box a
-init a =
-    { label = a
-    , lo = Vec2 0 0
-    , width = 64
-    , height = 36
-    , radius = 1
-    , inPorts = []
-    , outPorts = []
-    }
