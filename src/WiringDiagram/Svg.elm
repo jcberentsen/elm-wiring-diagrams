@@ -1,12 +1,12 @@
 module WiringDiagram.Svg exposing
-    ( view, Viewport, layoutToSvg, diagramToSvg
+    ( view, Viewport, layoutSimpleToSvg, layoutToSvg, diagramToSvg
     , smallViewport, mediumViewport, wideViewport, largeViewport
     , SvgConfig, layoutToSvgWithConfig
     )
 
 {-| Convert a Layout of a WireDiagram to SVG
 
-@docs view, Viewport, layoutToSvg, diagramToSvg
+@docs view, Viewport, layoutSimpleToSvg, layoutToSvg, diagramToSvg
 
 
 ## Viewport defaults
@@ -74,14 +74,12 @@ layoutToSvg =
         { toLabelString = always "_", dummy = () }
 
 
-toSvgTransform : { a | x : Float, y : Float } -> Svg.Attribute msg
-toSvgTransform t =
-    transform <|
-        "translate("
-            ++ String.fromFloat t.x
-            ++ ","
-            ++ String.fromFloat t.y
-            ++ ")"
+{-| Render a (Layout String) to Svg
+-}
+layoutSimpleToSvg : Layout String -> Svg msg
+layoutSimpleToSvg =
+    layoutToSvgWithConfig
+        { toLabelString = identity, dummy = () }
 
 
 {-| Render a Layout to Svg with configurable labeling
@@ -121,6 +119,16 @@ layoutToSvgWithConfig svgConfig l =
 diagramToSvg : Diagram a -> Svg msg
 diagramToSvg d =
     layoutToSvg <| layoutDiagram d
+
+
+toSvgTransform : { a | x : Float, y : Float } -> Svg.Attribute msg
+toSvgTransform t =
+    transform <|
+        "translate("
+            ++ String.fromFloat t.x
+            ++ ","
+            ++ String.fromFloat t.y
+            ++ ")"
 
 
 box : SvgConfig a -> Box a -> Svg msg
