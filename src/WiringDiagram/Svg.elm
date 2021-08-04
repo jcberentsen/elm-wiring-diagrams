@@ -96,7 +96,7 @@ layoutToSvgWithConfig svgConfig l =
                         [ box svgConfig b, inner ]
 
                 _ ->
-                    inner
+                    Svg.g [ tx ] [ inner ]
 
         Layout.Item b ->
             box svgConfig b

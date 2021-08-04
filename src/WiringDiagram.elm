@@ -2,8 +2,9 @@ module WiringDiagram exposing
     ( Diagram(..)
     , init
     , initLabeled, diagram
-    , source, sink, relation, inSequence, inParallel, setDirection, Direction(..), include, initWrap
+    , source, sink, relation, inSequence, inParallel, setLabel, setDirection, Direction(..), include
     , setOutPorts, setInPorts, outPorts, inPorts
+    , initWrap, setWrap
     , map, Ports, offsetPorts
     )
 
@@ -15,30 +16,38 @@ module WiringDiagram exposing
 <https://arxiv.org/pdf/2101.12046.pdf>
 
 
-## Diagram type
+# Diagram type
 
 @docs Diagram
 
 
-## Simple use
+# Simple use
 
 See ['WiringDiagram.Simple'](@WiringDiagram.Simple)
 
 @docs init
 
-#Custom use
+
+# Custom use
 
 @docs initLabeled, diagram
 
 
 # Diagram helpers
 
-@docs source, sink, relation, inSequence, inParallel, setDirection, Direction, include, initWrap
+@docs source, sink, relation, inSequence, inParallel, setLabel, setDirection, Direction, include
 
 
 # Input and output Ports
 
 @docs setOutPorts, setInPorts, outPorts, inPorts
+
+
+# Wrapping
+
+Parts of a Diagram can be wrapped and given a label of its own (with setLabel)
+
+@docs initWrap, setWrap
 
 
 # Misc
@@ -295,3 +304,13 @@ setDirection :
     -> { a | direction : Direction }
 setDirection dir d =
     { d | direction = dir }
+
+
+{-| Assign a label to a Diagram
+
+    setLabel (Just "node") <| diagram --
+
+-}
+setLabel : Maybe a -> Diagram a -> Diagram a
+setLabel ma (Diagram d) =
+    Diagram { d | label = ma }

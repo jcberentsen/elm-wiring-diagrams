@@ -29,7 +29,7 @@ pickPair labelA labelB l =
 
 
 
---| TODO this should fold the transformations
+--| This folds the transformations
 
 
 findExtent : ( a, String ) -> Layout a -> Maybe Extent

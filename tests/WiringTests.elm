@@ -1,12 +1,12 @@
 module WiringTests exposing (..)
 
 import Expect
-import Fuzz exposing (int, list)
 import Test exposing (..)
 import WiringDiagram as D exposing (..)
+import WiringDiagram.Examples exposing (..)
 import WiringDiagram.Layout as Layout exposing (..)
 import WiringDiagram.Layout.Box as Box
-import WiringDiagram.Layout.Extent as Extent
+import WiringDiagram.Layout.Extent as Extent exposing (..)
 import WiringDiagram.Layout.Readout as Layout exposing (..)
 
 
@@ -21,19 +21,6 @@ Also avoid having tests overlapping in ways that one change breaks multiple test
 -}
 suite : Test
 suite =
-    let
-        a =
-            D.source "a" 1
-
-        b =
-            D.sink "b" 1
-
-        a2 =
-            D.source "a2" 2
-
-        b2 =
-            D.sink "b2" 2
-    in
     describe "computeLayout"
         [ test "can compute where to display a single box" <|
             \_ -> layoutDiagram a |> Expect.equal (Item <| Box.boxify a)
@@ -50,28 +37,28 @@ suite =
                     computedLayout
                         |> Layout.pickPair (both "a") (both "b")
                         |> Maybe.map Extent.compare
-                        |> Expect.equal (Just Extent.LeftOf)
+                        |> Expect.equal (Just ( Onside Left, Overlap ))
             , test "The arrow is left of B" <|
                 \_ ->
                     computedLayout
                         |> Layout.pickPair (both "arrow") (both "b")
                         |> Maybe.map Extent.compare
-                        |> Expect.equal (Just Extent.LeftOf)
+                        |> Expect.equal (Just ( Onside Left, Overlap ))
             ]
-        , describe "layout of two sequential sub diagrams" <|
+        , describe "sequential layout of source and sink" <|
             let
-                ab =
-                    inSequence [ initWrap a, initWrap b ]
+                ac =
+                    inSequence [ initWrap a, initWrap c ]
 
                 computedLayout =
-                    layoutDiagram ab
+                    layoutDiagram ac
             in
-            [ test "A is fully left of B" <|
+            [ test "Source is fully left of sink" <|
                 \_ ->
                     computedLayout
-                        |> Layout.pickPair (both "a") (both "b")
+                        |> Layout.pickPair (both "a") (both "c")
                         |> Maybe.map Extent.compare
-                        |> Expect.equal (Just Extent.LeftOf)
+                        |> Expect.equal (Just ( Onside Left, Overlap ))
             , test "Two small and one connecting arrow = 3" <|
                 \_ ->
                     computedLayout
@@ -119,12 +106,30 @@ suite =
                     computedLayout
                         |> Layout.pickPair (both "a") (both "b")
                         |> Maybe.map Extent.compare
-                        |> Expect.equal (Just Extent.Overlapping)
+                        |> Expect.equal (Just ( Overlap, Onside Above ))
             , test "No arrows" <|
                 \_ ->
                     computedLayout
                         |> traverseArrows (always 1)
                         |> Expect.equal []
+            ]
+        , describe "More complex vertical composition" <|
+            let
+                computedLayout =
+                    layoutDiagram twoLanes
+            in
+            [ test "A is above E" <|
+                \_ ->
+                    computedLayout
+                        |> Layout.pickPair (both "a") (both "d")
+                        |> Maybe.map Extent.compare
+                        |> Expect.equal (Just ( Overlap, Onside Above ))
+            , test "Inner boxes overlap outer extent" <|
+                \_ ->
+                    computedLayout
+                        |> Layout.pickPair (both "abde") (both "e")
+                        |> Maybe.map Extent.compare
+                        |> Expect.equal (Just ( Overlap, Overlap ))
             ]
         , describe "Wrapped box" <|
             let
@@ -172,7 +177,7 @@ suite =
                     |> traverseArrows identity
                     |> List.length
                     |> Expect.equal 4
-        , test "Wrapped two paralell sources have arrows to sink" <|
+        , test "Wrapped two parallel sources have arrows to sink" <|
             \_ ->
                 inSequence
                     [ initWrap <|

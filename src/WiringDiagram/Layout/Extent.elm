@@ -16,11 +16,21 @@ type alias Extent =
     }
 
 
-{-| Represent how two boxes relate to each other when compared
--}
-type BoxRelation
-    = Overlapping
-    | LeftOf
+type Rel a
+    = Overlap
+    | Onside a
+
+
+type Hand
+    = Left
+
+
+type Altitude
+    = Above
+
+
+type alias ExtentRelation =
+    ( Rel Hand, Rel Altitude )
 
 
 {-| Map a function over the lo and hi corners of the extent
@@ -37,14 +47,28 @@ map f e =
 
 
 {-| Compare two extents and get their BoxRelation
--}
-compare : ( Extent, Extent ) -> BoxRelation
-compare ( a, b ) =
-    if a.hi.x <= b.lo.x then
-        LeftOf
 
-    else
-        Overlapping
+This implementation is naive and only covers some necessary cases to support testing
+
+-}
+compare : ( Extent, Extent ) -> ExtentRelation
+compare ( a, b ) =
+    let
+        side =
+            if a.hi.x <= b.lo.x then
+                Onside Left
+
+            else
+                Overlap
+
+        altitude =
+            if a.hi.y <= b.lo.y then
+                Onside Above
+
+            else
+                Overlap
+    in
+    ( side, altitude )
 
 
 {-| Find the outer hull of a list of Extents

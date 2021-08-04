@@ -245,9 +245,6 @@ bound l =
 
         Group g ->
             let
-                _ =
-                    g.interiorTransform
-
                 exteriorBound =
                     case g.exterior of
                         Just b ->
@@ -256,7 +253,7 @@ bound l =
                         _ ->
                             { lo = Vec2 0 0, hi = Vec2 0 0 }
             in
-            hull <| exteriorBound :: List.map bound g.interior
+            hull <| exteriorBound :: List.map (transformExtent g.transform << transformExtent g.interiorTransform << bound) g.interior
 
         Arrow arr ->
             arrowExtent arr
