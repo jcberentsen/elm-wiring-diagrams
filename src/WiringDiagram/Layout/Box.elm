@@ -13,7 +13,7 @@ module WiringDiagram.Layout.Box exposing
     , toExtent
     )
 
-import WiringDiagram exposing (..)
+import WiringDiagram.Internal exposing (..)
 import WiringDiagram.Layout.Extent exposing (..)
 import WiringDiagram.Vec2 exposing (..)
 
