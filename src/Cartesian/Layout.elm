@@ -14,7 +14,9 @@ import WiringDiagram.Layout.Internal as L exposing (Layout)
 
 
 {-| Layout a cartesian structure
+
 This is unfinished, and won't do anything interesting yet.
+
 -}
 toLayout : C a -> Layout a
 toLayout c =

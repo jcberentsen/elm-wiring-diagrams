@@ -90,7 +90,9 @@ wrap_axb_c =
 
 
 {-| A simple source labeled 'a'
+
 It has one output port.
+
 -}
 a : Diagram
 a =
@@ -98,7 +100,9 @@ a =
 
 
 {-| A simple relation labeled 'b'
+
 It has one input and one output port
+
 -}
 b : Diagram
 b =
@@ -106,7 +110,9 @@ b =
 
 
 {-| A simple sink labeled 'c'
+
 It has one input port
+
 -}
 c : Diagram
 c =
@@ -114,7 +120,9 @@ c =
 
 
 {-| A simple source labeled 'a2'
+
 It has two output ports
+
 -}
 a2 : Diagram
 a2 =
@@ -122,7 +130,9 @@ a2 =
 
 
 {-| A simple relation labeled 'b2'
+
 It has two input and output ports
+
 -}
 b2 : Diagram
 b2 =
@@ -130,7 +140,9 @@ b2 =
 
 
 {-| A simple sink labeled 'c2'
+
 It has two input ports
+
 -}
 c2 : Diagram
 c2 =

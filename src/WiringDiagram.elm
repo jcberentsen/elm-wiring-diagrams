@@ -4,8 +4,6 @@ module WiringDiagram exposing
     , initLabeled, diagram
     , source, sink, relation, inSequence, inParallel, setLabel
     , initWrap
-    -- , setOutPorts, setInPorts, outPorts, inPorts, alignPorts
-    -- , map, Ports, offsetPorts
     )
 
 {-| Wiring diagrams
@@ -60,6 +58,7 @@ type alias Diagram a =
 
 
 {-| Initialize an empty Diagram. The idea is a box with no label.
+
 The box is abstract and will be given geometry using [the Layout module](@Layout)
 
 Use modifiers like `setInPorts` to configure further
@@ -115,8 +114,12 @@ inSequence =
     I.inSequence
 
 
-{-| Put diagrams in parallel. No connections will be made.
+{-| Put diagrams in parallel.
+
+No connections will be made.
+
 (We probably need to relabel ports here...)
+
 -}
 inParallel : List (Diagram a) -> Diagram a
 inParallel =
