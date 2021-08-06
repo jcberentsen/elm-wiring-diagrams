@@ -3,13 +3,15 @@
     "name": "jcberentsen/elm-wiring-diagrams",
     "summary": "A package for SVG wiring-diagrams",
     "license": "BSD-3-Clause",
-    "version": "3.0.0",
+    "version": "3.1.0",
     "exposed-modules": [
         "WiringDiagram",
         "WiringDiagram.Layout",
         "WiringDiagram.Svg",
         "WiringDiagram.Svg.Config",
-        "WiringDiagram.Examples"
+        "WiringDiagram.Examples",
+        "Cartesian",
+        "Cartesian.Layout"
     ],
     "elm-version": "0.19.1 <= v < 0.20.0",
     "dependencies": {

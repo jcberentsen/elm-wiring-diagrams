@@ -1,68 +1,30 @@
 module WiringDiagram.Internal exposing
     ( Diagram(..)
+    , Direction(..)
+    , Ports
+    , alignPorts
+    , diagram
+    , inParallel
+    , inPorts
+    , inSequence
+    , include
     , init
-    , initLabeled, diagram
-    , source, sink, relation, inSequence, inParallel, setLabel, setDirection, Direction(..), include
-    , setOutPorts, setInPorts, outPorts, inPorts, alignPorts
-    , initWrap, setWrap
-    , map, Ports, offsetPorts
+    , initLabeled
+    , initWrap
+    , map
+    , offsetPorts
+    , outPorts
+    , relation
+    , setDirection
+    , setInPorts
+    , setLabel
+    , setOutPorts
+    , setWrap
+    , sink
+    , source
     )
 
-{-| Wiring diagrams
 
-
-# Inspiration
-
-<https://arxiv.org/pdf/2101.12046.pdf>
-
-
-# Diagram type
-
-@docs Diagram
-
-
-# Simple use
-
-See ['WiringDiagram.Simple'](@WiringDiagram.Simple)
-
-@docs init
-
-
-# Custom use
-
-@docs initLabeled, diagram
-
-
-# Diagram helpers
-
-@docs source, sink, relation, inSequence, inParallel, setLabel, setDirection, Direction, include
-
-
-# Input and output Ports
-
-@docs setOutPorts, setInPorts, outPorts, inPorts, alignPorts
-
-
-# Wrapping
-
-Parts of a Diagram can be wrapped and given a label of its own (with setLabel)
-
-@docs initWrap, setWrap
-
-
-# Misc
-
-@docs map, Ports, offsetPorts
-
--}
-
-
-{-| Represent an abstract wire-diagram.
-
-Think of boxes connected with ports, that can be inside other boxes (which connect outside)
-(TODO illustration)
-
--}
 type Diagram a
     = Diagram
         { label : Maybe a
@@ -74,22 +36,11 @@ type Diagram a
         }
 
 
-{-| Initialize an empty Diagram. The idea is a box with no label.
-The box is abstract and will be given geometry using [the Layout module](@Layout)
-
-Use modifiers like `setInPorts` to configure further
-
--}
 init : Diagram a
 init =
     initLabeled Nothing
 
 
-{-| Initialize an empty Diagram with a label of a chosen type
-
-All diagrams you intend to combine needs to have the same label type
-
--}
 initLabeled : Maybe a -> Diagram a
 initLabeled m =
     Diagram
@@ -102,8 +53,6 @@ initLabeled m =
         }
 
 
-{-| Wrap a diagram, exposing the free in and out ports
--}
 diagram : { a | label : Maybe b, inner : List (Diagram b) } -> Diagram b
 diagram schema =
     Diagram
@@ -116,8 +65,6 @@ diagram schema =
         }
 
 
-{-| Make a source with label a and a number of outPorts
--}
 source : a -> Int -> Diagram a
 source label portCount =
     initLabeled (Just label) |> map (setOutPorts (List.range 0 (portCount - 1)))
