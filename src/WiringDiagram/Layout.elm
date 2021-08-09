@@ -31,10 +31,10 @@ Typically a Layout can be converted to SVG for display
 
 -}
 
+import Internal.WiringDiagram.Layout as I
 import WiringDiagram exposing (..)
 import WiringDiagram.Layout.Box exposing (Box, Pos)
 import WiringDiagram.Layout.Config exposing (Config)
-import WiringDiagram.Layout.Internal as I
 
 
 {-| The Layout type keeps information about the layout of a Wiring diagram.

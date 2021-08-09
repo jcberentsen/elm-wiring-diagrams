@@ -21,11 +21,11 @@ module WiringDiagram.Svg exposing
 -}
 
 import Html exposing (Html)
+import Internal.WiringDiagram.Layout as Layout exposing (Layout)
 import Svg exposing (Svg, svg)
 import Svg.Attributes exposing (..)
 import WiringDiagram exposing (..)
 import WiringDiagram.Layout.Box exposing (..)
-import WiringDiagram.Layout.Internal as Layout exposing (Layout)
 import WiringDiagram.Svg.Arrow exposing (arrow)
 import WiringDiagram.Svg.Config as Config exposing (Config)
 

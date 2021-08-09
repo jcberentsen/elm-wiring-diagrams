@@ -44,7 +44,7 @@ Parts of a Diagram can be wrapped and given a label of its own (with setLabel)
 
 -}
 
-import WiringDiagram.Internal as I
+import Internal.WiringDiagram as I
 
 
 {-| Represent an abstract wire-diagram.

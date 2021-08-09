@@ -1,7 +1,7 @@
 module Cartesian.InterfaceTests exposing (..)
 
-import Cartesian.Interface exposing (..)
 import Expect
+import Internal.Cartesian.Interface exposing (..)
 import Test exposing (..)
 
 

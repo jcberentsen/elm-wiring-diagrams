@@ -1,4 +1,4 @@
-module WiringDiagram.Layout.Internal exposing
+module Internal.WiringDiagram.Layout exposing
     ( Layout(..)
     , layoutDiagram
     , layoutDiagramWithConfig
@@ -33,10 +33,11 @@ Typically a Layout can be converted to SVG for display
 -}
 
 import Dict
-import WiringDiagram.Internal exposing (..)
-import WiringDiagram.Layout.Box exposing (..)
+import Internal.Bound as Bound exposing (Bound, hull)
+import Internal.Extent as Extent
+import Internal.WiringDiagram exposing (..)
+import WiringDiagram.Layout.Box as Box exposing (Box)
 import WiringDiagram.Layout.Config as Config exposing (Config)
-import WiringDiagram.Layout.Extent exposing (Extent, hull)
 import WiringDiagram.Vec2 as Vec exposing (..)
 
 
@@ -92,7 +93,7 @@ layoutDiagramWithConfig config d =
             if List.isEmpty dia.inner then
                 let
                     box =
-                        boxify d
+                        Box.boxify d
                 in
                 Item box
 
@@ -105,8 +106,9 @@ layoutDiagramWithConfig config d =
                 setInPorts dia.inPorts <|
                     setOutPorts dia.outPorts <|
                         grow 10 <|
-                            boxFromExtent dia.label <|
-                                bound innerLayout
+                            Maybe.withDefault (Box.boxify d) <|
+                                Maybe.map (Box.fromExtent dia.label) <|
+                                    bound innerLayout
 
             -- we need to compute the arrow across the interiorTransform, so
             -- we revert it temporarily in the wrapping
@@ -257,26 +259,32 @@ parLayouts config subLayouts =
         }
 
 
-bound : Layout a -> Extent
+bound : Layout a -> Bound
 bound l =
     case l of
         Item b ->
-            toExtent b
+            Just (Box.toExtent b)
 
         Group g ->
             let
                 exteriorBound =
                     case g.exterior of
                         Just b ->
-                            toExtent b |> transformExtent g.transform
+                            Bound.init <| Extent.translate g.transform <| Box.toExtent b
 
                         _ ->
-                            { lo = Vec2 0 0, hi = Vec2 0 0 }
+                            Bound.empty
             in
-            hull <| exteriorBound :: List.map (transformExtent g.transform << transformExtent g.interiorTransform << bound) g.interior
+            hull <|
+                exteriorBound
+                    :: List.map
+                        (Maybe.map (Extent.translate g.transform << Extent.translate g.interiorTransform)
+                            << bound
+                        )
+                        g.interior
 
         Arrow arr ->
-            arrowExtent arr
+            Just (arrowExtent arr)
 
 
 {-| Make an extent for an Arrow. This stupidly assumes the tail is < head
@@ -288,21 +296,18 @@ arrowExtent arr =
     }
 
 
-toExtent : Box a -> Extent
-toExtent b =
-    { lo = b.lo
-    , hi = { x = b.lo.x + b.width, y = b.lo.y + b.height }
-    }
 
-
-transformExtent : Vec2 -> Extent -> Extent
-transformExtent tx e =
-    { lo = translate tx e.lo
-    , hi = translate tx e.hi
-    }
-
-
-
+-- toExtent : Box a -> Extent
+-- toExtent b =
+--     { lo = b.lo
+--     , hi = { x = b.lo.x + b.width, y = b.lo.y + b.height }
+--     }
+--
+-- transformExtent : Vec2 -> Extent -> Extent
+-- transformExtent tx e =
+--     { lo = translate tx e.lo
+--     , hi = translate tx e.hi
+--     }
 -- Hm, not too good. Is extent a monoid?
 -- Perhaps interval algebra is better here?
 -- nullExtent : { lo : { x : number, y : number }, hi : { x : number, y : number } }
@@ -351,20 +356,22 @@ shift t l =
 
 widthOf : Layout a -> Float
 widthOf l =
-    let
-        b =
-            bound l
-    in
-    b.hi.x - b.lo.x
+    case bound l of
+        Just b ->
+            b.hi.x - b.lo.x
+
+        _ ->
+            0
 
 
 heightOf : Layout a -> Float
 heightOf l =
-    let
-        b =
-            bound l
-    in
-    b.hi.y - b.lo.y
+    case bound l of
+        Just b ->
+            b.hi.y - b.lo.y
+
+        _ ->
+            0
 
 
 {-| Polarity of a Port. Is the port going In or Out of something
@@ -386,7 +393,7 @@ grow v b =
 
 {-| List the port positions of a Box, given a Polarity (In,Out)
 -}
-portPositionsOfBox : Polarity -> Box a -> List ( Int, Pos )
+portPositionsOfBox : Polarity -> Box a -> List ( Int, Vec2 )
 portPositionsOfBox d b =
     let
         ports =
@@ -408,7 +415,7 @@ portPositionsOfBox d b =
 
 {-| List the port positions of a Layout, given a Polarity (In,Out)
 -}
-portPositionsOfLayout : Polarity -> Layout a -> List ( Int, Pos )
+portPositionsOfLayout : Polarity -> Layout a -> List ( Int, Vec2 )
 portPositionsOfLayout d l =
     case l of
         Item a ->

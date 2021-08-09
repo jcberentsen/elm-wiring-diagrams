@@ -1,4 +1,4 @@
-module Cartesian.Interface exposing (Interface, aside, before, incompatibility, init, unit)
+module Internal.Cartesian.Interface exposing (Interface(..), aside, before, incompatibility, init, unit)
 
 
 type Interface

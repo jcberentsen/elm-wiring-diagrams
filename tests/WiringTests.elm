@@ -2,13 +2,13 @@ module WiringTests exposing (..)
 
 import Expect
 import Fuzz exposing (Fuzzer)
+import Internal.Extent as Extent exposing (..)
+import Internal.WiringDiagram as D exposing (..)
+import Internal.WiringDiagram.Layout as I
 import Test exposing (..)
 import WiringDiagram.Examples exposing (..)
-import WiringDiagram.Internal as D exposing (..)
 import WiringDiagram.Layout as Layout exposing (..)
 import WiringDiagram.Layout.Box as Box
-import WiringDiagram.Layout.Extent as Extent exposing (..)
-import WiringDiagram.Layout.Internal as I
 import WiringDiagram.Layout.Readout as Layout exposing (..)
 
 

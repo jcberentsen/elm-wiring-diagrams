@@ -1,4 +1,4 @@
-module WiringDiagram.Internal exposing
+module Internal.WiringDiagram exposing
     ( Diagram(..)
     , Direction(..)
     , Ports

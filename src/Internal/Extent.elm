@@ -1,6 +1,7 @@
-module WiringDiagram.Layout.Extent exposing (..)
+module Internal.Extent exposing (..)
 
-import WiringDiagram.Vec2 exposing (..)
+import List.Nonempty as NE exposing (Nonempty)
+import WiringDiagram.Vec2 as Vec2 exposing (Vec2)
 
 
 {-| Represent the horizontal and vertical extents of a two dimensinal area (also called bounding-box).
@@ -9,11 +10,18 @@ Extents should be kept in a shared coordinate system
 
 Consider using <https://package.elm-lang.org/packages/r-k-b/elm-interval/latest/> internally
 
+Perhaps we should use Maybe instead of special Empty?
+
 -}
 type alias Extent =
     { lo : Vec2
     , hi : Vec2
     }
+
+
+
+-- = Bound Extent
+-- | Empty
 
 
 type Rel a
@@ -33,12 +41,22 @@ type alias ExtentRelation =
     ( Rel Hand, Rel Altitude )
 
 
+init : Vec2 -> Vec2 -> Extent
+init lo hi =
+    { lo = lo, hi = hi }
+
+
 {-| Map a function over the lo and hi corners of the extent
 
 **Note:** This probably exposes a bit too much of the internals, so don't rely on this.
 It is possible that the representation will change, perhaps to intervals
 
 -}
+translate : Vec2 -> Extent -> Extent
+translate t e =
+    map (Vec2.translate t) e
+
+
 map : (b -> a) -> { c | lo : b, hi : b } -> { lo : a, hi : a }
 map f e =
     { lo = f e.lo
@@ -73,38 +91,20 @@ compare ( a, b ) =
 
 {-| Find the outer hull of a list of Extents
 -}
-hull : List Extent -> Extent
+hull : Nonempty Extent -> Extent
 hull ls =
-    let
-        combine b acc =
-            let
-                lo =
-                    { x = min b.lo.x acc.lo.x
-                    , y = min b.lo.y acc.lo.y
-                    }
-
-                hi =
-                    { x = max b.hi.x acc.hi.x
-                    , y = max b.hi.y acc.hi.y
-                    }
-            in
-            { acc | lo = lo, hi = hi }
-    in
-    List.foldr combine empty ls
+    NE.foldl1 combine ls
 
 
-{-| The empty extent should probably be represented better than this....
-This gives an empty extent, but located at the origin.
-It would be better located nowhere, as [`hull`](#hull) will be wrong
-
-Perhaps interval algebra is better here?
-
--}
-empty : { lo : { x : number, y : number }, hi : { x : number, y : number } }
-empty =
-    { lo = { x = 0, y = 0 }
-    , hi = { x = 0, y = 0 }
-    }
+combine : Extent -> Extent -> Extent
+combine l r =
+    init
+        { x = min l.lo.x r.lo.x
+        , y = min l.lo.y r.lo.y
+        }
+        { x = max l.hi.x r.hi.x
+        , y = max l.hi.y r.hi.y
+        }
 
 
 computeCenterY : Extent -> Float

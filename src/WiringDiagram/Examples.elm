@@ -6,7 +6,7 @@ module WiringDiagram.Examples exposing (sampleDiagrams, a, b, c, a2, b2, c2, two
 
 -}
 
-import WiringDiagram.Internal as D exposing (..)
+import Internal.WiringDiagram as D exposing (..)
 
 
 type alias Diagram =

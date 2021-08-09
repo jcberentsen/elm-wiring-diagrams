@@ -25,8 +25,8 @@ The Cost of Compositionality: A High-Performance Implementation of String Diagra
 
 -}
 
-import Cartesian.Interface as I exposing (Interface)
-import Cartesian.Internal as Internal exposing (..)
+import Internal.Cartesian as Internal exposing (..)
+import Internal.Cartesian.Interface as I exposing (Interface)
 
 
 {-| The type of a cartesian structure

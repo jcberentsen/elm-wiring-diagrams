@@ -1,23 +1,25 @@
-module Cartesian.Layout exposing
-    ( toLayout
-    , toLayoutWithConfig
-    )
+module Cartesian.Layout exposing (toLayout, toLayoutWithConfig)
 
 {-| Layout a cartesian structure
 
 
 ## Usage
 
-@docs toLayout
+@docs toLayout, toLayoutWithConfig
 
 -}
 
-import Cartesian.Internal as C exposing (C(..))
+import Internal.Arrow as Arrow exposing (Arrow)
+import Internal.Bound as Bound exposing (Bound)
+import Internal.Cartesian as C exposing (C(..))
+import Internal.Cartesian.Interface as I
+import Internal.Cartesian.Layout as Layout
+import Internal.Extent as Extent exposing (Extent)
+import Internal.WiringDiagram.Layout as L
+import List.Nonempty as NE exposing (Nonempty)
 import WiringDiagram.Layout.Box as Box
 import WiringDiagram.Layout.Config as Config exposing (Config)
-import WiringDiagram.Layout.Extent exposing (computeCenterY)
-import WiringDiagram.Layout.Internal as L exposing (Layout)
-import WiringDiagram.Vec2 exposing (Vec2)
+import WiringDiagram.Vec2 as Vec2 exposing (Vec2)
 
 
 {-| Layout a cartesian structure
@@ -25,75 +27,21 @@ import WiringDiagram.Vec2 exposing (Vec2)
 This is unfinished, and won't do anything interesting yet.
 
 -}
-toLayout : C a -> Layout a
+toLayout : C a -> L.Layout a
 toLayout =
-    toLayoutWithConfig <| Config.init (\_ _ -> "arrow") (Vec2 40 20)
+    let
+        defaultConfig =
+            Config.init (\_ _ -> "arrow") (Vec2 40 20)
+    in
+    toLayoutWithConfig <|
+        defaultConfig
 
 
-arrowHeadLength : number
-arrowHeadLength =
-    10
+{-| Layout with some configuration
 
+This is unfinished, and won't do anything interesting yet.
 
-toLayoutWithConfig : Config a -> C a -> Layout a
+-}
+toLayoutWithConfig : Config a -> C a -> L.Layout a
 toLayoutWithConfig config c =
-    case c of
-        C.Unit ->
-            L.empty
-
-        C interface composition ->
-            let
-                inner =
-                    composeLayout config composition
-
-                innerExtent =
-                    L.bound inner
-
-                ( incoming, outgoing ) =
-                    case interface of
-                        _ ->
-                            -- I.Unital ->
-                            let
-                                i =
-                                    L.Arrow
-                                        { label = "arrow"
-                                        , tail = { x = innerExtent.lo.x, y = computeCenterY innerExtent }
-                                        , head = { x = innerExtent.lo.x + arrowHeadLength, y = computeCenterY innerExtent }
-                                        }
-
-                                o =
-                                    L.Arrow
-                                        { label = "arrow"
-                                        , tail =
-                                            { x = innerExtent.hi.x + arrowHeadLength
-                                            , y = computeCenterY innerExtent
-                                            }
-                                        , head =
-                                            { x = innerExtent.hi.x + 2 * arrowHeadLength
-                                            , y = computeCenterY innerExtent
-                                            }
-                                        }
-                            in
-                            ( i, o )
-            in
-            L.Group
-                { transform = Vec2 0 0
-                , exterior = Nothing
-                , interiorTransform = Vec2 0 0
-                , interior = [ incoming, L.shift { x = arrowHeadLength, y = 0 } inner, outgoing ]
-
-                --Tuple.second <| List.foldl horizontallyCentered ( 0, [] ) subLayouts
-                }
-
-
-composeLayout : Config a -> C.Composed a -> Layout a
-composeLayout config c =
-    case c of
-        C.Leaf a ->
-            L.Item <| Box.init <| Just a
-
-        C.Sequenced l r ->
-            L.chainLayouts config <| List.map (toLayoutWithConfig config) [ l, r ]
-
-        C.Aside a b ->
-            L.parLayouts config <| List.map (toLayoutWithConfig config) [ a, b ]
+    Layout.finalizeLayout <| Layout.layout config c

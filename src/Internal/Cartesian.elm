@@ -1,6 +1,6 @@
-module Cartesian.Internal exposing (C(..), Composed(..), aside, before, group, init, interface, unit)
+module Internal.Cartesian exposing (C(..), Composed(..), aside, before, group, init, interface, unit)
 
-import Cartesian.Interface as I exposing (Interface)
+import Internal.Cartesian.Interface as I exposing (Interface)
 
 
 type C a

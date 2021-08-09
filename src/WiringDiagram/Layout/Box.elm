@@ -5,16 +5,16 @@ module WiringDiagram.Layout.Box exposing
     , Polarity(..)
     , Pos
     , Transform
-    , boxFromExtent
     , boxify
     , compareBoxes
+    , fromExtent
     , init
     , pad
     , toExtent
     )
 
-import WiringDiagram.Internal exposing (..)
-import WiringDiagram.Layout.Extent exposing (..)
+import Internal.Extent as Extent exposing (Extent)
+import Internal.WiringDiagram exposing (..)
 import WiringDiagram.Vec2 exposing (..)
 
 
@@ -86,8 +86,8 @@ compareBoxes ( a, b ) =
 
 {-| Make a Box from an Extent given an optional label a
 -}
-boxFromExtent : Maybe a -> Extent -> Box a
-boxFromExtent a e =
+fromExtent : Maybe a -> Extent -> Box a
+fromExtent a e =
     let
         box =
             init a

@@ -1,9 +1,12 @@
 module Cartesian.DeepTests exposing (..)
 
-import Cartesian.Interface as Interface
-import Cartesian.Internal exposing (..)
 import Expect
+import Internal.Cartesian exposing (..)
+import Internal.Cartesian.Interface as Interface
+import Internal.Cartesian.Layout as Layout
 import Test exposing (..)
+import WiringDiagram.Layout.Config as Config
+import WiringDiagram.Vec2 exposing (Vec2)
 
 
 suite : Test
@@ -71,6 +74,21 @@ suite =
                         |> Expect.equal (Interface.init 2 2)
             , todo "Associativity"
             , todo "Canonical form?"
-            , todo "Convert to diagram or layout directly?"
+            ]
+        , describe "Layout"
+            [ test "a (1 -> 1)" <|
+                \_ ->
+                    let
+                        defaultConfig =
+                            Config.init (\_ _ -> "arrow") (Vec2 40 20)
+
+                        expect =
+                            Just
+                                { lo = { x = 0, y = 0 }, hi = { x = 40, y = 20 } }
+                    in
+                    init "a"
+                        |> Layout.layout defaultConfig
+                        |> Layout.extentOf
+                        |> Expect.equal expect
             ]
         ]

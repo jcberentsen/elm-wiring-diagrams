@@ -5,9 +5,9 @@ module WiringDiagram.Layout.Readout exposing
     , traverseOuterBoxes
     )
 
+import Internal.Extent as Extent exposing (Extent)
+import Internal.WiringDiagram.Layout exposing (..)
 import WiringDiagram.Layout.Box exposing (..)
-import WiringDiagram.Layout.Extent as Extent exposing (Extent)
-import WiringDiagram.Layout.Internal exposing (..)
 import WiringDiagram.Vec2 as Vec exposing (..)
 
 
