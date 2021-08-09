@@ -5,7 +5,7 @@ module WiringDiagram.Layout.Config exposing
     )
 
 import WiringDiagram exposing (..)
-import WiringDiagram.Vec2 as Vec exposing (..)
+import WiringDiagram.Vec2 exposing (..)
 
 
 type Config a

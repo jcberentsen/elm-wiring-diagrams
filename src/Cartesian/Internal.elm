@@ -35,29 +35,29 @@ init v =
 
 
 before : C a -> C a -> C a
-before lhs rhs =
-    case ( lhs, rhs ) of
+before second first =
+    case ( first, second ) of
         ( Unit, _ ) ->
-            rhs
+            second
 
         ( _, Unit ) ->
-            lhs
+            first
 
         ( C il _, C ir _ ) ->
-            C (il |> I.before ir) (Sequenced lhs rhs)
+            C (il |> I.before ir) (Sequenced first second)
 
 
 aside : C a -> C a -> C a
-aside lhs rhs =
-    case ( lhs, rhs ) of
+aside second first =
+    case ( first, second ) of
         ( Unit, _ ) ->
-            rhs
+            second
 
         ( _, Unit ) ->
-            lhs
+            first
 
         ( C il _, C ir _ ) ->
-            C (il |> I.aside ir) (Aside lhs rhs)
+            C (il |> I.aside ir) (Aside first second)
 
 
 interface : C a -> Interface

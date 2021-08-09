@@ -3,7 +3,7 @@ module WiringDiagram.Layout.Internal exposing
     , layoutDiagram
     , layoutDiagramWithConfig
     , Polarity(..), Transform, arrowExtent, portPositionsOfBox
-    , empty
+    , bound, chain, chainLayouts, empty, par, parLayouts, shift
     )
 
 {-| Layout of WiringDiagram values
@@ -147,7 +147,13 @@ chain config ds =
     let
         subLayouts =
             List.map (layoutDiagramWithConfig config) ds
+    in
+    chainLayouts config subLayouts
 
+
+chainLayouts : Config a -> List (Layout a) -> Layout a
+chainLayouts config subLayouts =
+    let
         maxHeight =
             Maybe.withDefault 0 <| List.maximum <| List.map heightOf subLayouts
 
@@ -215,9 +221,18 @@ computeArrowsDir fromDir toDir layoutA layoutB =
 {-| compose parallell (independent lanes)
 -}
 par : Config a -> List (Diagram a) -> Layout a
-par config d =
+par config ds =
     let
-        vertically : Diagram a -> ( Float, List (Layout a) ) -> ( Float, List (Layout a) )
+        subLayouts =
+            List.map (layoutDiagramWithConfig config) ds
+    in
+    parLayouts config subLayouts
+
+
+parLayouts : Config a -> List (Layout a) -> Layout a
+parLayouts config subLayouts =
+    let
+        vertically : Layout a -> ( Float, List (Layout a) ) -> ( Float, List (Layout a) )
         vertically item ( y, acc ) =
             let
                 spacing =
@@ -228,7 +243,7 @@ par config d =
                         ty =
                             Vec2 0 y
                     in
-                    shift ty <| layoutDiagramWithConfig config item
+                    shift ty item
             in
             ( y + heightOf sub + spacing.y
             , acc ++ [ sub ]
@@ -238,7 +253,7 @@ par config d =
         { transform = Vec2 0 0
         , exterior = Nothing
         , interiorTransform = Vec2 0 0
-        , interior = Tuple.second <| List.foldl vertically ( 0, [] ) d
+        , interior = Tuple.second <| List.foldl vertically ( 0, [] ) subLayouts
         }
 
 
