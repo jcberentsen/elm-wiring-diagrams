@@ -76,7 +76,7 @@ suite =
             , todo "Canonical form?"
             ]
         , describe "Layout"
-            [ test "a (1 -> 1)" <|
+            [ test "Singleton item: -> a ->" <|
                 \_ ->
                     let
                         defaultConfig =
@@ -87,6 +87,23 @@ suite =
                                 { lo = { x = 0, y = 0 }, hi = { x = 40, y = 20 } }
                     in
                     init "a"
+                        |> Layout.layout defaultConfig
+                        |> Layout.extentOf
+                        |> Expect.equal expect
+            , test "No extra outer arrows in '-> a -> b ->'" <|
+                \_ ->
+                    let
+                        defaultConfig =
+                            Config.init (\_ _ -> "arrow") (Vec2 40 20)
+
+                        sample =
+                            init "a" |> before (init "b")
+
+                        expect =
+                            Just
+                                { lo = { x = 0, y = 0 }, hi = { x = 80, y = 20 } }
+                    in
+                    sample
                         |> Layout.layout defaultConfig
                         |> Layout.extentOf
                         |> Expect.equal expect

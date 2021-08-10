@@ -6,7 +6,7 @@ import Internal.Cartesian as C exposing (C(..))
 import Internal.Cartesian.Interface as I
 import Internal.Extent as Extent exposing (Extent)
 import Internal.WiringDiagram.Layout as L
-import List.Nonempty as NE exposing (Nonempty)
+import List.Nonempty as NE
 import WiringDiagram.Layout.Box as Box
 import WiringDiagram.Layout.Config as Config exposing (Config)
 import WiringDiagram.Vec2 as Vec2 exposing (Vec2)
@@ -29,72 +29,13 @@ layout config c =
         C.Unit ->
             Empty
 
-        C interface composition ->
+        C interface (C.Leaf l) ->
             let
                 inner =
-                    composeLayout config composition
+                    composeLayout config (C.Leaf l)
 
                 innerBound =
                     extentOf inner
-
-                -- ( incoming, outgoing ) =
-                --     case interface of
-                --         I.Unital ->
-                --             let
-                --                 i =
-                --                     L.Arrow
-                --                         { label = "arrow"
-                --                         , tail = { x = innerExtent.lo.x, y = computeCenterY innerExtent }
-                --                         , head = { x = innerExtent.lo.x + Arrow.headLength, y = computeCenterY innerExtent }
-                --                         }
-                --                 o =
-                --                     L.Arrow
-                --                         { label = "arrow"
-                --                         , tail =
-                --                             { x = innerExtent.hi.x + Arrow.headLength
-                --                             , y = computeCenterY innerExtent
-                --                             }
-                --                         , head =
-                --                             { x = innerExtent.hi.x + 2 * Arrow.headLength
-                --                             , y = computeCenterY innerExtent
-                --                             }
-                --                         }
-                --             in
-                --             ( [ i ], [ o ] )
-                --         I.Arity h ->
-                --             let
-                --                 i n =
-                --                     let
-                --                         y =
-                --                             computeCenterY innerExtent + toFloat n * 4
-                --                     in
-                --                     L.Arrow
-                --                         { label = "arrow"
-                --                         , tail = { x = innerExtent.lo.x, y = y }
-                --                         , head = { x = innerExtent.lo.x + Arrow.headLength, y = y }
-                --                         }
-                --                 o n =
-                --                     let
-                --                         y =
-                --                             computeCenterY innerExtent + toFloat n * 4
-                --                     in
-                --                     L.Arrow
-                --                         { label = "arrow"
-                --                         , tail =
-                --                             { x = innerExtent.hi.x + Arrow.headLength
-                --                             , y = y
-                --                             }
-                --                         , head =
-                --                             { x = innerExtent.hi.x + 2 * Arrow.headLength
-                --                             , y = y
-                --                             }
-                --                         }
-                --             in
-                --             ( List.range 0 (h.inp - 1) |> List.map i
-                --             , List.range 0 (h.out - 1) |> List.map o
-                --             )
-                --         I.Incompatibility _ ->
-                --             ( [], [] )
             in
             case Bound.extentOf innerBound of
                 Just innerExtent ->
@@ -127,6 +68,82 @@ layout config c =
 
                 _ ->
                     Empty
+
+        C interface composition ->
+            let
+                inner =
+                    composeLayout config composition
+
+                innerBound =
+                    extentOf inner
+            in
+            case Bound.extentOf innerBound of
+                Just innerExtent ->
+                    let
+                        inputArrow =
+                            -- case interface of
+                            --     _ ->
+                            Arrow.intoLeftEdge innerExtent
+
+                        inputArrowsExtent =
+                            Arrow.extentOf inputArrow
+
+                        shift =
+                            { x = inputArrowsExtent.hi.x - inputArrowsExtent.lo.x, y = 0 }
+
+                        innerShifted =
+                            Extent.translate shift innerExtent
+
+                        outArrow =
+                            -- case interface of
+                            --     _ ->
+                            Arrow.outRightEdge innerShifted
+                    in
+                    Layout
+                        { inArrows = []
+                        , contents = [ inner ]
+                        , outArrows = []
+                        , extent = innerExtent -- Extent.combine (Extent.combine inputArrowsExtent innerShifted) <| Arrow.extentOf outArrow
+                        }
+
+                _ ->
+                    Empty
+
+
+
+-- C interface composition ->
+--     let
+--         inner =
+--             composeLayout config composition
+--         innerBound =
+--             extentOf inner
+--     in
+--     case Bound.extentOf innerBound of
+--         Just innerExtent ->
+--             let
+--                 inputArrow =
+--                     -- case interface of
+--                     --     _ ->
+--                     Arrow.intoLeftEdge innerExtent
+--                 inputArrowsExtent =
+--                     Arrow.extentOf inputArrow
+--                 shift =
+--                     { x = inputArrowsExtent.hi.x - inputArrowsExtent.lo.x, y = 0 }
+--                 innerShifted =
+--                     Extent.translate shift innerExtent
+--                 outArrow =
+--                     -- case interface of
+--                     --     _ ->
+--                     Arrow.outRightEdge innerShifted
+--             in
+--             Layout
+--                 { inArrows = [ inputArrow ]
+--                 , contents = [ translate shift inner ]
+--                 , outArrows = [ outArrow ]
+--                 , extent = Extent.combine (Extent.combine inputArrowsExtent innerShifted) <| Arrow.extentOf outArrow
+--                 }
+--         _ ->
+--             Empty
 
 
 composeLayout : Config a -> C.Composed a -> Layout a

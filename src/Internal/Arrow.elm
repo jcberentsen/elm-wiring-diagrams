@@ -1,5 +1,5 @@
 module Internal.Arrow exposing
-    ( Arrow, translate
+    ( Arrow, init, translate
     , ends, extentOf, headLength, intoLeftEdge, outRightEdge
     )
 
@@ -25,6 +25,15 @@ This is unfinished, and won't do anything interesting yet.
 headLength : number
 headLength =
     10
+
+
+init : Vec2 -> Vec2 -> Arrow
+init from to =
+    Arrow
+        { tailPoint = from
+        , meander = Direct
+        , headPoint = to
+        }
 
 
 extentOf : Arrow -> Extent
