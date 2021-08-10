@@ -9,17 +9,11 @@ module Cartesian.Layout exposing (toLayout, toLayoutWithConfig)
 
 -}
 
-import Internal.Arrow as Arrow exposing (Arrow)
-import Internal.Bound as Bound exposing (Bound)
-import Internal.Cartesian as C exposing (C(..))
-import Internal.Cartesian.Interface as I
+import Internal.Cartesian exposing (C)
 import Internal.Cartesian.Layout as Layout
-import Internal.Extent as Extent exposing (Extent)
 import Internal.WiringDiagram.Layout as L
-import List.Nonempty as NE exposing (Nonempty)
-import WiringDiagram.Layout.Box as Box
 import WiringDiagram.Layout.Config as Config exposing (Config)
-import WiringDiagram.Vec2 as Vec2 exposing (Vec2)
+import WiringDiagram.Vec2 exposing (Vec2)
 
 
 {-| Layout a cartesian structure

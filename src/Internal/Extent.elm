@@ -110,3 +110,8 @@ combine l r =
 computeCenterY : Extent -> Float
 computeCenterY e =
     (e.lo.y + e.hi.y) / 2
+
+
+height : Extent -> Float
+height e =
+    e.hi.y - e.lo.y

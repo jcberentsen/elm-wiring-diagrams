@@ -35,7 +35,7 @@ layout config c =
                     composeLayout config (C.Leaf l)
 
                 innerBound =
-                    extentOf inner
+                    boundOf inner
             in
             case Bound.extentOf innerBound of
                 Just innerExtent ->
@@ -75,7 +75,7 @@ layout config c =
                     composeLayout config composition
 
                 innerBound =
-                    extentOf inner
+                    boundOf inner
             in
             case Bound.extentOf innerBound of
                 Just innerExtent ->
@@ -167,7 +167,7 @@ composeLayout config c =
                     horizontal [ layout config l, layout config r ]
 
                 innerBound =
-                    Bound.hull <| List.map extentOf contents
+                    Bound.hull <| List.map boundOf contents
             in
             case Bound.extentOf innerBound of
                 Just innerExtent ->
@@ -187,7 +187,7 @@ composeLayout config c =
                     vertical [ layout config a, layout config b ]
 
                 extents =
-                    NE.fromList <| List.filterMap extentOf contents
+                    NE.fromList <| List.filterMap boundOf contents
             in
             case extents of
                 Just ne ->
@@ -257,8 +257,8 @@ translate t ll =
             Empty
 
 
-extentOf : Layout a -> Bound
-extentOf l =
+boundOf : Layout a -> Bound
+boundOf l =
     case l of
         Layout ll ->
             Just ll.extent
@@ -275,29 +275,41 @@ extentOf l =
 horizontal : List (Layout a) -> List (Layout a)
 horizontal items =
     let
-        extents =
-            Nothing :: List.map extentOf items
+        bounds =
+            List.map boundOf items
 
-        moveRightOf i previousBound =
+        extents =
+            List.filterMap identity bounds
+
+        maxHeight =
+            Maybe.withDefault 0 <| List.maximum <| List.map Extent.height extents
+
+        horizontallyCentered sub =
+            case boundOf sub of
+                Just extent ->
+                    let
+                        tr =
+                            Vec2 0 ((maxHeight - Extent.height extent) / 2)
+                    in
+                    translate tr sub
+
+                _ ->
+                    let
+                        tr =
+                            Vec2 0 (maxHeight / 2)
+                    in
+                    translate tr sub
+
+        moveRightOf sub previousBound =
             case previousBound of
                 Nothing ->
-                    i
+                    horizontallyCentered sub
 
                 Just extent ->
-                    translate { x = extent.hi.x - extent.lo.x, y = 0 } i
+                    translate { x = extent.hi.x - extent.lo.x, y = 0 } <|
+                        horizontallyCentered sub
     in
-    List.map2 moveRightOf items extents
-
-
-{-| Back to back horizontal layout (no padding)
--}
-horizontalFixed : List (Layout a) -> List (Layout a)
-horizontalFixed items =
-    let
-        hmove n item =
-            translate { x = toFloat n * 40, y = 0 } item
-    in
-    List.indexedMap hmove items
+    List.map2 moveRightOf items (Nothing :: bounds)
 
 
 {-| Back to back vertical layout (no padding)
@@ -309,6 +321,41 @@ vertical items =
             translate { x = 0, y = toFloat n * 40 } item
     in
     List.indexedMap vmove items
+
+
+centerOfMass : Layout a -> Vec2
+centerOfMass top =
+    let
+        goExtents l =
+            case l of
+                Empty ->
+                    []
+
+                Leaf e ->
+                    [ e.extent ]
+
+                Layout sub ->
+                    List.concatMap goExtents sub.contents
+
+        center : Extent -> ( Float, Float )
+        center e =
+            ( (e.hi.x + e.lo.x) / 2
+            , (e.lo.y + e.hi.y) / 2
+            )
+
+        extents =
+            goExtents top
+
+        len =
+            toFloat <|
+                List.length
+                    extents
+
+        average : ( List Float, List Float ) -> Vec2
+        average ( xs, ys ) =
+            { x = List.sum xs / len, y = List.sum ys / len }
+    in
+    extents |> List.map center |> List.unzip |> average
 
 
 

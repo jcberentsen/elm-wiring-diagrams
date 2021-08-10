@@ -88,7 +88,20 @@ suite =
                     in
                     init "a"
                         |> Layout.layout defaultConfig
-                        |> Layout.extentOf
+                        |> Layout.boundOf
+                        |> Expect.equal expect
+            , test "Singleton item center of mass" <|
+                \_ ->
+                    let
+                        defaultConfig =
+                            Config.init (\_ _ -> "arrow") (Vec2 40 20)
+
+                        expect =
+                            { x = 20, y = 10 }
+                    in
+                    init "a"
+                        |> Layout.layout defaultConfig
+                        |> Layout.centerOfMass
                         |> Expect.equal expect
             , test "No extra outer arrows in '-> a -> b ->'" <|
                 \_ ->
@@ -105,7 +118,24 @@ suite =
                     in
                     sample
                         |> Layout.layout defaultConfig
-                        |> Layout.extentOf
+                        |> Layout.boundOf
                         |> Expect.equal expect
+            , test "Center y horizontally" <|
+                \_ ->
+                    let
+                        defaultConfig =
+                            Config.init (\_ _ -> "arrow") (Vec2 40 20)
+
+                        sample =
+                            (init "a" |> aside (init "b")) |> before (init "c")
+
+                        expectY =
+                            30
+                    in
+                    sample
+                        |> Layout.layout defaultConfig
+                        |> Layout.centerOfMass
+                        |> .y
+                        |> Expect.within (Expect.Absolute 0.001) expectY
             ]
         ]
