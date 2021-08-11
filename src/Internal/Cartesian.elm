@@ -1,4 +1,4 @@
-module Internal.Cartesian exposing (C(..), Composed(..), aside, before, group, init, interface, unit)
+module Internal.Cartesian exposing (C(..), Composed(..), aside, before, group, init, initWith, interface, unit)
 
 import Internal.Cartesian.Interface as I exposing (Interface)
 
@@ -32,6 +32,11 @@ group v =
 init : a -> C a
 init v =
     C (I.init 1 1) (Leaf v)
+
+
+initWith : Interface -> a -> C a
+initWith i v =
+    C i (Leaf v)
 
 
 before : C a -> C a -> C a

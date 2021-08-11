@@ -2,7 +2,7 @@ module Internal.WiringDiagram.Layout exposing
     ( Layout(..)
     , layoutDiagram
     , layoutDiagramWithConfig
-    , Polarity(..), Transform, arrowExtent, portPositionsOfBox
+    , Transform, arrowExtent, portPositionsOfBox
     , bound, chain, chainLayouts, empty, par, parLayouts, shift
     )
 
@@ -34,7 +34,7 @@ Typically a Layout can be converted to SVG for display
 
 import Dict
 import Internal.Bound as Bound exposing (Bound, hull)
-import Internal.Extent as Extent
+import Internal.Extent as Extent exposing (Polarity(..))
 import Internal.WiringDiagram exposing (..)
 import WiringDiagram.Layout.Box as Box exposing (Box)
 import WiringDiagram.Layout.Config as Config exposing (Config)
@@ -372,13 +372,6 @@ heightOf l =
 
         _ ->
             0
-
-
-{-| Polarity of a Port. Is the port going In or Out of something
--}
-type Polarity
-    = In
-    | Out
 
 
 {-| Grow the width and height of a Box. Does not move the local origin.

@@ -31,6 +31,7 @@ Typically a Layout can be converted to SVG for display
 
 -}
 
+import Internal.Extent as I
 import Internal.WiringDiagram.Layout as I
 import WiringDiagram exposing (..)
 import WiringDiagram.Layout.Box exposing (Box, Pos)

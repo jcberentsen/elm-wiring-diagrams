@@ -3,10 +3,10 @@ module Internal.Cartesian.Layout exposing (..)
 import Internal.Arrow as Arrow exposing (Arrow)
 import Internal.Bound as Bound exposing (Bound)
 import Internal.Cartesian as C exposing (C(..))
-import Internal.Cartesian.Interface as I
-import Internal.Extent as Extent exposing (Extent)
+import Internal.Cartesian.Interface exposing (Interface(..))
+import Internal.Extent as Extent exposing (Extent, Polarity(..))
 import Internal.WiringDiagram.Layout as L
-import List.Nonempty as NE
+import List.Nonempty as NE exposing (Nonempty)
 import WiringDiagram.Layout.Box as Box
 import WiringDiagram.Layout.Config as Config exposing (Config)
 import WiringDiagram.Vec2 as Vec2 exposing (Vec2)
@@ -40,31 +40,13 @@ layout config c =
             case Bound.extentOf innerBound of
                 Just innerExtent ->
                     let
-                        inputArrow =
-                            -- case interface of
-                            --     _ ->
-                            Arrow.intoLeftEdge innerExtent
+                        inputArrows =
+                            arrowsFor In interface innerExtent Arrow.forEdge
 
-                        inputArrowsExtent =
-                            Arrow.extentOf inputArrow
-
-                        shift =
-                            { x = inputArrowsExtent.hi.x - inputArrowsExtent.lo.x, y = 0 }
-
-                        innerShifted =
-                            Extent.translate shift innerExtent
-
-                        outArrow =
-                            -- case interface of
-                            --     _ ->
-                            Arrow.outRightEdge innerShifted
+                        outArrows =
+                            arrowsFor Out interface innerExtent Arrow.forEdge
                     in
-                    Layout
-                        { inArrows = [ inputArrow ]
-                        , contents = [ translate shift inner ]
-                        , outArrows = [ outArrow ]
-                        , extent = Extent.combine (Extent.combine inputArrowsExtent innerShifted) <| Arrow.extentOf outArrow
-                        }
+                    horizontalWithArrows inputArrows ( inner, innerExtent ) outArrows
 
                 _ ->
                     Empty
@@ -80,70 +62,82 @@ layout config c =
             case Bound.extentOf innerBound of
                 Just innerExtent ->
                     let
-                        inputArrow =
-                            -- case interface of
-                            --     _ ->
-                            Arrow.intoLeftEdge innerExtent
+                        arrowConfig =
+                            { headLength = 0 }
 
-                        inputArrowsExtent =
-                            Arrow.extentOf inputArrow
+                        inputArrows =
+                            arrowsFor In interface innerExtent (Arrow.forEdgeWith arrowConfig)
 
-                        shift =
-                            { x = inputArrowsExtent.hi.x - inputArrowsExtent.lo.x, y = 0 }
-
-                        innerShifted =
-                            Extent.translate shift innerExtent
-
-                        outArrow =
-                            -- case interface of
-                            --     _ ->
-                            Arrow.outRightEdge innerShifted
+                        outArrows =
+                            arrowsFor Out interface innerExtent (Arrow.forEdgeWith arrowConfig)
                     in
-                    Layout
-                        { inArrows = []
-                        , contents = [ inner ]
-                        , outArrows = []
-                        , extent = innerExtent -- Extent.combine (Extent.combine inputArrowsExtent innerShifted) <| Arrow.extentOf outArrow
-                        }
+                    horizontalWithArrows inputArrows ( inner, innerExtent ) outArrows
 
                 _ ->
                     Empty
 
 
+arrowsFor :
+    Polarity
+    -> Interface
+    -> Extent
+    -> (Polarity -> Int -> Extent -> Arrow)
+    -> Nonempty Arrow
+arrowsFor side interface innerExtent arrowPlacer =
+    case interface of
+        Unital ->
+            NE.singleton <| arrowPlacer side 0 innerExtent
 
--- C interface composition ->
---     let
---         inner =
---             composeLayout config composition
---         innerBound =
---             extentOf inner
---     in
---     case Bound.extentOf innerBound of
---         Just innerExtent ->
---             let
---                 inputArrow =
---                     -- case interface of
---                     --     _ ->
---                     Arrow.intoLeftEdge innerExtent
---                 inputArrowsExtent =
---                     Arrow.extentOf inputArrow
---                 shift =
---                     { x = inputArrowsExtent.hi.x - inputArrowsExtent.lo.x, y = 0 }
---                 innerShifted =
---                     Extent.translate shift innerExtent
---                 outArrow =
---                     -- case interface of
---                     --     _ ->
---                     Arrow.outRightEdge innerShifted
---             in
---             Layout
---                 { inArrows = [ inputArrow ]
---                 , contents = [ translate shift inner ]
---                 , outArrows = [ outArrow ]
---                 , extent = Extent.combine (Extent.combine inputArrowsExtent innerShifted) <| Arrow.extentOf outArrow
---                 }
---         _ ->
---             Empty
+        Arity arities ->
+            let
+                arity =
+                    case side of
+                        In ->
+                            arities.inp
+
+                        Out ->
+                            arities.out
+
+                arrow n =
+                    arrowPlacer side n innerExtent
+            in
+            NE.Nonempty (arrow 0) <| List.map arrow <| List.range 1 (arity - 1)
+
+        _ ->
+            NE.singleton <| Arrow.forEdgeWith { headLength = 2 } side 0 innerExtent
+
+
+{-| Layout input arrows and inner layout with outArrows
+
+The input is assumed to be relative to the inner layout extents
+and will be shifted right by the extent of the input arrows
+
+-}
+horizontalWithArrows : Nonempty Arrow -> ( Layout a, Extent ) -> Nonempty Arrow -> Layout a
+horizontalWithArrows inputArrows ( inner, innerExtent ) outArrows =
+    -- TODO We seem to be overusing translate here, can we simplify?
+    let
+        inputArrowsExtent =
+            Extent.hull <| NE.map Arrow.extentOf inputArrows
+
+        innerShift =
+            { x = Extent.width inputArrowsExtent, y = 0 }
+
+        innerShifted =
+            Extent.translate innerShift innerExtent
+
+        outputArrowsExtent =
+            Extent.hull <| NE.map Arrow.extentOf outArrows
+    in
+    Layout
+        { inArrows = List.map (Arrow.translate innerShift) <| NE.toList inputArrows
+        , contents = [ translate innerShift inner ]
+        , outArrows = List.map (Arrow.translate innerShift) <| NE.toList outArrows
+        , extent =
+            Extent.hull <|
+                NE.Nonempty (Extent.translate innerShift inputArrowsExtent)
+                    [ innerShifted, Extent.translate innerShift outputArrowsExtent ]
+        }
 
 
 composeLayout : Config a -> C.Composed a -> Layout a
@@ -271,6 +265,13 @@ boundOf l =
 
 
 {-| Back to back horizontal layout (no padding)
+
+This will center items along a horizontal
+
+a
+-c---- center
+b
+
 -}
 horizontal : List (Layout a) -> List (Layout a)
 horizontal items =
@@ -284,43 +285,89 @@ horizontal items =
         maxHeight =
             Maybe.withDefault 0 <| List.maximum <| List.map Extent.height extents
 
-        horizontallyCentered sub =
-            case boundOf sub of
-                Just extent ->
-                    let
-                        tr =
-                            Vec2 0 ((maxHeight - Extent.height extent) / 2)
-                    in
-                    translate tr sub
-
-                _ ->
-                    let
-                        tr =
-                            Vec2 0 (maxHeight / 2)
-                    in
-                    translate tr sub
-
         moveRightOf sub previousBound =
             case previousBound of
                 Nothing ->
-                    horizontallyCentered sub
+                    horizontallyCentered maxHeight sub
 
                 Just extent ->
                     translate { x = extent.hi.x - extent.lo.x, y = 0 } <|
-                        horizontallyCentered sub
+                        horizontallyCentered maxHeight sub
     in
     List.map2 moveRightOf items (Nothing :: bounds)
 
 
-{-| Back to back vertical layout (no padding)
+{-| Back to back vertical layout
+This will center items along a horizontal
+
+    a|b
+     c
+
 -}
 vertical : List (Layout a) -> List (Layout a)
 vertical items =
     let
-        vmove n item =
-            translate { x = 0, y = toFloat n * 40 } item
+        bounds =
+            List.map boundOf items
+
+        extents =
+            List.filterMap identity bounds
+
+        maxWidth =
+            Maybe.withDefault 0 <| List.maximum <| List.map Extent.width extents
+
+        align sub previousBound =
+            case previousBound of
+                Nothing ->
+                    verticallyCentered maxWidth sub
+
+                Just extent ->
+                    translate { x = 0, y = extent.hi.y - extent.lo.y } <|
+                        verticallyCentered maxWidth sub
     in
-    List.indexedMap vmove items
+    List.map2 align items (Nothing :: bounds)
+
+
+horizontallyCentered : Float -> Layout b -> Layout b
+horizontallyCentered maxHeight sub =
+    let
+        toCenter v =
+            Vec2 0 v
+
+        extentSide =
+            Extent.height
+    in
+    centerWith toCenter extentSide maxHeight sub
+
+
+verticallyCentered : Float -> Layout a -> Layout a
+verticallyCentered maxWidth sub =
+    let
+        toCenter v =
+            Vec2 v 0
+
+        extentSide =
+            Extent.width
+    in
+    centerWith toCenter extentSide maxWidth sub
+
+
+centerWith : (Float -> Vec2) -> (Extent -> Float) -> Float -> Layout b -> Layout b
+centerWith toCenter extentSide range sub =
+    case boundOf sub of
+        Just extent ->
+            let
+                tr =
+                    toCenter ((range - extentSide extent) / 2)
+            in
+            translate tr sub
+
+        _ ->
+            let
+                tr =
+                    toCenter (range / 2)
+            in
+            translate tr sub
 
 
 centerOfMass : Layout a -> Vec2
@@ -356,7 +403,3 @@ centerOfMass top =
             { x = List.sum xs / len, y = List.sum ys / len }
     in
     extents |> List.map center |> List.unzip |> average
-
-
-
--- L.parLayouts config <| List.map (toLayoutWithConfig config) [ a, b ]

@@ -79,9 +79,6 @@ suite =
             [ test "Singleton item: -> a ->" <|
                 \_ ->
                     let
-                        defaultConfig =
-                            Config.init (\_ _ -> "arrow") (Vec2 40 20)
-
                         expect =
                             Just
                                 { lo = { x = 0, y = 0 }, hi = { x = 40, y = 20 } }
@@ -93,9 +90,6 @@ suite =
             , test "Singleton item center of mass" <|
                 \_ ->
                     let
-                        defaultConfig =
-                            Config.init (\_ _ -> "arrow") (Vec2 40 20)
-
                         expect =
                             { x = 20, y = 10 }
                     in
@@ -106,9 +100,6 @@ suite =
             , test "No extra outer arrows in '-> a -> b ->'" <|
                 \_ ->
                     let
-                        defaultConfig =
-                            Config.init (\_ _ -> "arrow") (Vec2 40 20)
-
                         sample =
                             init "a" |> before (init "b")
 
@@ -123,19 +114,50 @@ suite =
             , test "Center y horizontally" <|
                 \_ ->
                     let
-                        defaultConfig =
-                            Config.init (\_ _ -> "arrow") (Vec2 40 20)
-
                         sample =
                             (init "a" |> aside (init "b")) |> before (init "c")
 
                         expectY =
-                            30
+                            20
                     in
                     sample
                         |> Layout.layout defaultConfig
                         |> Layout.centerOfMass
                         |> .y
                         |> Expect.within (Expect.Absolute 0.001) expectY
+            , test "Center parallel lanes vertically" <|
+                \_ ->
+                    let
+                        sample =
+                            (init "a" |> before (init "b")) |> aside (init "c")
+
+                        expectX =
+                            40
+                    in
+                    sample
+                        |> Layout.layout defaultConfig
+                        |> Layout.centerOfMass
+                        |> .x
+                        |> Expect.within (Expect.Absolute 0.001) expectX
+            , test "Connect arrows between inner and outer" <|
+                \_ ->
+                    let
+                        sample =
+                            (init "a" |> aside (init "b")) |> before (init "c")
+
+                        expectX =
+                            0
+                    in
+                    sample
+                        |> Layout.layout defaultConfig
+                        |> Layout.centerOfMass
+                        |> .x
+                        |> Expect.within (Expect.Absolute 0.001) expectX
+            , todo "Two arrow stubs into (2)-> box ->(1)"
             ]
         ]
+
+
+defaultConfig : Config.Config b
+defaultConfig =
+    Config.init (\_ _ -> "arrow") (Vec2 40 20)

@@ -1,6 +1,6 @@
 module Cartesian exposing
     ( C, Interface
-    , before, aside, init, unit, group, interface
+    , before, aside, init, initWith, unit, group, interface
     )
 
 {-| A module for cartesian structure
@@ -21,7 +21,7 @@ The Cost of Compositionality: A High-Performance Implementation of String Diagra
 
 ## Usage
 
-@docs before, aside, init, unit, group, interface
+@docs before, aside, init, initWith, unit, group, interface
 
 -}
 
@@ -71,6 +71,13 @@ group =
 init : a -> C a
 init =
     Internal.init
+
+
+{-| Initialize a morphism with a given interface and label
+-}
+initWith : Int -> Int -> a -> C a
+initWith i o =
+    Internal.initWith (I.init i o)
 
 
 {-| Put one structure before another

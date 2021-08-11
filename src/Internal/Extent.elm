@@ -19,9 +19,9 @@ type alias Extent =
     }
 
 
-
--- = Bound Extent
--- | Empty
+type Polarity
+    = In
+    | Out
 
 
 type Rel a
@@ -72,7 +72,7 @@ This implementation is naive and only covers some necessary cases to support tes
 compare : ( Extent, Extent ) -> ExtentRelation
 compare ( a, b ) =
     let
-        side =
+        attitude =
             if a.hi.x <= b.lo.x then
                 Onside Left
 
@@ -86,7 +86,7 @@ compare ( a, b ) =
             else
                 Overlap
     in
-    ( side, altitude )
+    ( attitude, altitude )
 
 
 {-| Find the outer hull of a list of Extents
@@ -115,3 +115,29 @@ computeCenterY e =
 height : Extent -> Float
 height e =
     e.hi.y - e.lo.y
+
+
+width : Extent -> Float
+width e =
+    e.hi.x - e.lo.x
+
+
+{-| Yield the x position of the side representing the polarity
+
+    -- x for the left side
+    side In =
+        e.lo.x
+
+    -- x for the right side
+    side Out =
+        e.hi.x
+
+-}
+side : Polarity -> Extent -> Float
+side s e =
+    case s of
+        In ->
+            e.lo.x
+
+        Out ->
+            e.hi.x
