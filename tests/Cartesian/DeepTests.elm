@@ -76,12 +76,12 @@ suite =
             , todo "Canonical form?"
             ]
         , describe "Layout"
-            [ test "Singleton item: -> a ->" <|
+            [ test "Singleton item: a" <|
                 \_ ->
                     let
                         expect =
                             Just
-                                { lo = { x = 0, y = 0 }, hi = { x = 40, y = 20 } }
+                                { lo = { x = 0, y = 0 }, hi = { x = 20, y = 20 } }
                     in
                     init "a"
                         |> Layout.layout defaultConfig
@@ -91,13 +91,13 @@ suite =
                 \_ ->
                     let
                         expect =
-                            { x = 20, y = 10 }
+                            { x = 10, y = 10 }
                     in
                     init "a"
                         |> Layout.layout defaultConfig
                         |> Layout.centerOfMass
                         |> Expect.equal expect
-            , test "No extra outer arrows in '-> a -> b ->'" <|
+            , test "No extra outer arrows in 'a -> b'" <|
                 \_ ->
                     let
                         sample =
@@ -105,7 +105,7 @@ suite =
 
                         expect =
                             Just
-                                { lo = { x = 0, y = 0 }, hi = { x = 80, y = 20 } }
+                                { lo = { x = 0, y = 0 }, hi = { x = 50, y = 20 } }
                     in
                     sample
                         |> Layout.layout defaultConfig
@@ -125,6 +125,20 @@ suite =
                         |> Layout.centerOfMass
                         |> .y
                         |> Expect.within (Expect.Absolute 0.001) expectY
+            , test "Horizontal center of mass" <|
+                \_ ->
+                    let
+                        sample =
+                            init "a" |> before (init "b")
+
+                        expectX =
+                            25
+                    in
+                    sample
+                        |> Layout.layout defaultConfig
+                        |> Layout.centerOfMass
+                        |> .x
+                        |> Expect.within (Expect.Absolute 0.001) expectX
             , test "Center parallel lanes vertically" <|
                 \_ ->
                     let
@@ -132,28 +146,29 @@ suite =
                             (init "a" |> before (init "b")) |> aside (init "c")
 
                         expectX =
-                            40
+                            25
                     in
                     sample
                         |> Layout.layout defaultConfig
                         |> Layout.centerOfMass
                         |> .x
                         |> Expect.within (Expect.Absolute 0.001) expectX
-            , test "Connect arrows between inner and outer" <|
+            , test "(a x b) => c should have 2 visible arrows" <|
                 \_ ->
                     let
                         sample =
-                            (init "a" |> aside (init "b")) |> before (init "c")
-
-                        expectX =
-                            0
+                            (init "a"
+                                |> aside (init "b")
+                            )
+                                |> before (initWith (Interface.init 2 1) "c")
                     in
                     sample
                         |> Layout.layout defaultConfig
-                        |> Layout.centerOfMass
-                        |> .x
-                        |> Expect.within (Expect.Absolute 0.001) expectX
-            , todo "Two arrow stubs into (2)-> box ->(1)"
+                        |> Layout.countVisibleArrows
+                        |> Expect.equal 2
+            , todo "Sanity check extents inwards in Layout"
+            , todo "Fix vertical alignment"
+            , todo "Other invariants. No overlap of inner extents"
             ]
         ]
 

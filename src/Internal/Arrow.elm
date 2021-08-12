@@ -1,4 +1,7 @@
-module Internal.Arrow exposing (..)
+module Internal.Arrow exposing
+    ( Arrow, translate
+    , boundOf, connect, ends, forEdge, forEdgeWith, isVisible, truncate
+    )
 
 {-| Arrow module
 
@@ -9,6 +12,7 @@ module Internal.Arrow exposing (..)
 
 -}
 
+import Internal.Bound as Bound exposing (Bound)
 import Internal.Extent as Extent exposing (Extent, Polarity(..))
 import List.Nonempty as NE
 import WiringDiagram.Vec2 as Vec2 exposing (Vec2)
@@ -21,6 +25,10 @@ type Arrow
         { tailPoint : Vec2
         , meander : Meander
         , headPoint : Vec2
+        }
+    | Port
+        { pos : Vec2
+        , polarity : Polarity
         }
 
 
@@ -38,8 +46,79 @@ type alias Config =
 
 
 ends : Arrow -> ( Vec2, Vec2 )
-ends (Arrow a) =
-    ( a.tailPoint, a.headPoint )
+ends a =
+    case a of
+        Arrow arr ->
+            ( arr.tailPoint, arr.headPoint )
+
+        Port p ->
+            ( p.pos, p.pos )
+
+
+truncate : Polarity -> Arrow -> Arrow
+truncate p a =
+    case a of
+        Arrow arrow ->
+            case p of
+                In ->
+                    Port { pos = arrow.headPoint, polarity = p }
+
+                Out ->
+                    Port { pos = arrow.tailPoint, polarity = p }
+
+        Port _ ->
+            a
+
+
+{-| Extent an arrow between two arrows assumed to be adjacent in the x direction
+Connect two arrows by taking over the tail and head
+
+
+# -> + ->
+
+------>
+
+-}
+connect : Float -> Arrow -> Arrow -> Arrow
+connect dx l r =
+    case ( l, r ) of
+        ( Arrow a, Arrow b ) ->
+            Arrow
+                { tailPoint = a.tailPoint
+                , headPoint = { x = b.headPoint.x + dx, y = b.headPoint.y }
+                , meander = Direct
+                }
+
+        ( Arrow a, Port b ) ->
+            Arrow
+                { tailPoint = a.tailPoint
+                , headPoint = { x = b.pos.x + dx, y = b.pos.y }
+                , meander = Direct
+                }
+
+        ( Port a, Arrow b ) ->
+            Arrow
+                { tailPoint = a.pos
+                , headPoint = { x = b.headPoint.x + dx, y = b.headPoint.y }
+                , meander = Direct
+                }
+
+        ( Port a, Port b ) ->
+            Arrow
+                { tailPoint = a.pos
+                , headPoint = { x = b.pos.x + dx, y = b.pos.y }
+                , meander = Direct
+                }
+
+
+isVisible : Arrow -> Bool
+isVisible a =
+    case a of
+        Arrow arr ->
+            arr.tailPoint /= arr.headPoint
+
+        Port _ ->
+            False
 
 
 {-| Layout a cartesian structure
@@ -54,15 +133,29 @@ headLength =
 
 init : Vec2 -> Vec2 -> Arrow
 init from to =
-    Arrow
-        { tailPoint = from
-        , meander = Direct
-        , headPoint = to
-        }
+    if from == to then
+        Port { pos = from, polarity = In }
+
+    else
+        Arrow
+            { tailPoint = from
+            , meander = Direct
+            , headPoint = to
+            }
 
 
-extentOf : Arrow -> Extent
-extentOf (Arrow a) =
+boundOf : Arrow -> Bound
+boundOf a =
+    case a of
+        Arrow arr ->
+            Just <| extentOf arr
+
+        _ ->
+            Bound.empty
+
+
+extentOf : { a | tailPoint : Vec2, headPoint : Vec2, meander : Meander } -> Extent
+extentOf a =
     let
         extents =
             NE.Nonempty { lo = a.tailPoint, hi = a.headPoint } <| meanderExtents a.meander
@@ -127,17 +220,23 @@ meanderExtents m =
 
 
 translate : Vec2 -> Arrow -> Arrow
-translate t (Arrow s) =
+translate t a =
+    -- (Arrow s) =
     let
         tv =
             Vec2.translate t
     in
-    Arrow
-        { s
-            | tailPoint = tv s.tailPoint
-            , headPoint = tv s.headPoint
-            , meander = translateMeander tv s.meander
-        }
+    case a of
+        Arrow s ->
+            Arrow
+                { s
+                    | tailPoint = tv s.tailPoint
+                    , headPoint = tv s.headPoint
+                    , meander = translateMeander tv s.meander
+                }
+
+        Port p ->
+            Port { p | pos = tv p.pos }
 
 
 translateMeander : (Vec2 -> Vec2) -> Meander -> Meander

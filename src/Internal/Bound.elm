@@ -24,6 +24,11 @@ extentOf =
     identity
 
 
+width : Bound -> Float
+width =
+    Maybe.withDefault 0 << Maybe.map Extent.width
+
+
 {-| Map a function over the lo and hi corners of the extent
 
 **Note:** This probably exposes a bit too much of the internals, so don't rely on this.
