@@ -35,10 +35,10 @@ Typically a Layout can be converted to SVG for display
 import Dict
 import Internal.Bound as Bound exposing (Bound, hull)
 import Internal.Extent as Extent exposing (Polarity(..))
+import Internal.Layout.Config as Config exposing (Config)
+import Internal.Vec2 as Vec exposing (..)
 import Internal.WiringDiagram exposing (..)
 import WiringDiagram.Layout.Box as Box exposing (Box)
-import WiringDiagram.Layout.Config as Config exposing (Config)
-import WiringDiagram.Vec2 as Vec exposing (..)
 
 
 {-| The Layout type keeps information about the layout of a Wiring diagram.
@@ -78,7 +78,7 @@ type alias Transform =
 -}
 layoutDiagram : Diagram a -> Layout a
 layoutDiagram =
-    layoutDiagramWithConfig <| Config.init (\_ _ -> "arrow") (Vec2 40 20)
+    layoutDiagramWithConfig <| Config.initWithArrowLablerAndSpacing (\_ _ -> "arrow") (Vec2 40 20)
 
 
 {-| Layout a Diagram with custom configuration

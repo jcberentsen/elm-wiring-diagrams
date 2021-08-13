@@ -9,12 +9,12 @@ module Cartesian.Layout exposing (toLayout, toLayoutWithConfig)
 
 -}
 
+import Diagram.Layout.Config as Config exposing (Config)
 import Internal.Cartesian exposing (C)
 import Internal.Cartesian.Layout as Layout
 import Internal.Cartesian.Layout.Convert as Convert
+import Internal.Vec2 exposing (Vec2)
 import Internal.WiringDiagram.Layout as L
-import WiringDiagram.Layout.Config as Config exposing (Config)
-import WiringDiagram.Vec2 exposing (Vec2)
 
 
 {-| Layout a cartesian structure
@@ -26,7 +26,7 @@ toLayout : C a -> L.Layout a
 toLayout =
     let
         defaultConfig =
-            Config.init (\_ _ -> "arrow") (Vec2 40 20)
+            Config.default |> Config.setSpacing (Vec2 40 20)
     in
     toLayoutWithConfig <|
         defaultConfig

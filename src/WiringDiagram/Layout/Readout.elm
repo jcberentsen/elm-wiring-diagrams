@@ -6,9 +6,9 @@ module WiringDiagram.Layout.Readout exposing
     )
 
 import Internal.Extent as Extent exposing (Extent)
+import Internal.Vec2 as Vec exposing (..)
 import Internal.WiringDiagram.Layout exposing (..)
 import WiringDiagram.Layout.Box exposing (..)
-import WiringDiagram.Vec2 as Vec exposing (..)
 
 
 pickPair : ( a, String ) -> ( a, String ) -> Layout a -> Maybe ( Extent, Extent )

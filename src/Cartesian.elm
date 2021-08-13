@@ -1,7 +1,6 @@
 module Cartesian exposing
     ( C, Interface
-    , before, aside, init, initWith, unit, group, interface
-    , wrap
+    , before, aside, init, initWith, unit, group, interface, wrap
     )
 
 {-| A module for cartesian structure
@@ -22,7 +21,7 @@ The Cost of Compositionality: A High-Performance Implementation of String Diagra
 
 ## Usage
 
-@docs before, aside, init, initWith, unit, group, interface
+@docs before, aside, init, initWith, unit, group, interface, wrap
 
 -}
 

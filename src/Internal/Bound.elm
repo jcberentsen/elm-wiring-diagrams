@@ -1,8 +1,8 @@
 module Internal.Bound exposing (..)
 
 import Internal.Extent as Extent exposing (Extent)
-import List.Nonempty as NE exposing (Nonempty)
-import WiringDiagram.Vec2 as Vec2 exposing (Vec2)
+import Internal.Vec2 exposing (Vec2)
+import List.Nonempty as NE
 
 
 type alias Bound =

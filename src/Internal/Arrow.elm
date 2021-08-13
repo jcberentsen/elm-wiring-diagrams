@@ -14,8 +14,8 @@ module Internal.Arrow exposing
 
 import Internal.Bound as Bound exposing (Bound)
 import Internal.Extent as Extent exposing (Extent, Polarity(..))
+import Internal.Vec2 as Vec2 exposing (Vec2)
 import List.Nonempty as NE
-import WiringDiagram.Vec2 as Vec2 exposing (Vec2)
 
 
 {-| Arrow type representing the geometry of an arrow.

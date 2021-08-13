@@ -11,7 +11,11 @@
         "WiringDiagram.Svg.Config",
         "WiringDiagram.Examples",
         "Cartesian",
-        "Cartesian.Layout"
+        "Cartesian.Layout",
+        "Diagram.Layout.Config",
+        "Diagram.Bound",
+        "Diagram.Vec2",
+        "Diagram.Extent"
     ],
     "elm-version": "0.19.1 <= v < 0.20.0",
     "dependencies": {

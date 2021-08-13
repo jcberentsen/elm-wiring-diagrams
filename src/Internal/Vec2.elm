@@ -1,4 +1,4 @@
-module WiringDiagram.Vec2 exposing (Vec2, translate)
+module Internal.Vec2 exposing (Vec2, translate)
 
 
 type alias Vec2 =

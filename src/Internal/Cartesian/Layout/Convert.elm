@@ -1,18 +1,12 @@
 module Internal.Cartesian.Layout.Convert exposing (finalizeLayout)
 
+import Internal.Arrow as Arrow
 import Internal.Cartesian.Layout exposing (..)
-
-import Internal.Arrow as Arrow exposing (Arrow)
-import Internal.Bound as Bound exposing (Bound)
-import Internal.Cartesian as C exposing (C(..))
-import Internal.Cartesian.Interface exposing (Interface(..))
-import Internal.Extent as Extent exposing (Extent, Polarity(..))
+import Internal.Vec2 exposing (Vec2)
 import Internal.WiringDiagram.Layout as L
 import List
-import List.Nonempty as NE exposing (Nonempty)
+import List.Nonempty as NE
 import WiringDiagram.Layout.Box as Box
-import WiringDiagram.Layout.Config as Config exposing (Config)
-import WiringDiagram.Vec2 as Vec2 exposing (Vec2)
 
 
 finalizeLayout : Layout a -> L.Layout a

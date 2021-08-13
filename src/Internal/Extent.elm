@@ -1,7 +1,7 @@
 module Internal.Extent exposing (..)
 
+import Internal.Vec2 as Vec2 exposing (Vec2)
 import List.Nonempty as NE exposing (Nonempty)
-import WiringDiagram.Vec2 as Vec2 exposing (Vec2)
 
 
 {-| Represent the horizontal and vertical extents of a two dimensinal area (also called bounding-box).

@@ -13,9 +13,9 @@ module WiringDiagram.Layout.Box exposing
     , toExtent
     )
 
-import Internal.Extent as Extent exposing (Extent)
+import Internal.Extent exposing (Extent)
+import Internal.Vec2 exposing (..)
 import Internal.WiringDiagram exposing (..)
-import WiringDiagram.Vec2 exposing (..)
 
 
 type alias BoxConfig =

@@ -4,9 +4,9 @@ import Expect
 import Internal.Cartesian exposing (..)
 import Internal.Cartesian.Interface as Interface
 import Internal.Cartesian.Layout as Layout
+import Internal.Layout.Config as Config
+import Internal.Vec2 exposing (Vec2)
 import Test exposing (..)
-import WiringDiagram.Layout.Config as Config
-import WiringDiagram.Vec2 exposing (Vec2)
 
 
 suite : Test
@@ -187,4 +187,4 @@ suite =
 
 defaultConfig : Config.Config b
 defaultConfig =
-    Config.init (\_ _ -> "arrow") (Vec2 40 20)
+    Config.initWithArrowLablerAndSpacing (\_ _ -> "arrow") (Vec2 40 20)

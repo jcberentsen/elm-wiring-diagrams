@@ -1,11 +1,11 @@
 module WiringDiagram.Svg.Arrow exposing (arrow)
 
+import Internal.Vec2 exposing (..)
 import Svg exposing (Svg)
 import Svg.Attributes exposing (..)
 import Svg.PathD exposing (Segment(..), pathD)
 import WiringDiagram exposing (..)
 import WiringDiagram.Layout exposing (..)
-import WiringDiagram.Vec2 exposing (..)
 
 
 

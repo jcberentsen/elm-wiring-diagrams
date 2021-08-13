@@ -5,11 +5,10 @@ import Internal.Bound as Bound exposing (Bound)
 import Internal.Cartesian as C exposing (C(..))
 import Internal.Cartesian.Interface exposing (Interface(..))
 import Internal.Extent as Extent exposing (Extent, Polarity(..))
-import Internal.WiringDiagram.Layout as L
+import Internal.Layout.Config as Config exposing (Config)
+import Internal.Vec2 as Vec2 exposing (Vec2)
 import List
 import List.Nonempty as NE exposing (Nonempty)
-import WiringDiagram.Layout.Config as Config exposing (Config)
-import WiringDiagram.Vec2 as Vec2 exposing (Vec2)
 
 
 type Layout a
@@ -326,6 +325,7 @@ translate t ll =
             Layout
                 { l
                     | inArrows = NE.map (Arrow.translate t) l.inArrows
+                    , wrapping = Maybe.map (\w -> { w | extent = Extent.translate t w.extent }) l.wrapping
                     , contents = List.map (translate t) l.contents
                     , outArrows = NE.map (Arrow.translate t) l.outArrows
                     , extent = Extent.map (Vec2.translate t) l.extent
