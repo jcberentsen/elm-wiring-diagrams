@@ -57,7 +57,6 @@ suite =
                     lhs
                         |> aside unit
                         |> Expect.equal lhs
-            , todo "Do we even need the unit?"
             ]
         , describe "Algebraic"
             [ test "a |> before b keeps interface (1 -> 1)" <|
@@ -72,31 +71,43 @@ suite =
                         |> aside (init "b")
                         |> interface
                         |> Expect.equal (Interface.init 2 2)
-            , todo "Associativity"
-            , todo "Canonical form?"
             ]
         , describe "Layout"
-            [ test "Singleton item: a" <|
-                \_ ->
-                    let
-                        expect =
-                            Just
-                                { lo = { x = 0, y = 0 }, hi = { x = 20, y = 20 } }
-                    in
-                    init "a"
-                        |> Layout.layout defaultConfig
-                        |> Layout.boundOf
-                        |> Expect.equal expect
-            , test "Singleton item center of mass" <|
-                \_ ->
-                    let
-                        expect =
-                            { x = 10, y = 10 }
-                    in
-                    init "a"
-                        |> Layout.layout defaultConfig
-                        |> Layout.centerOfMass
-                        |> Expect.equal expect
+            [ describe "Singleton a"
+                [ test "Extent should match configuration 20x20" <|
+                    \_ ->
+                        let
+                            expect =
+                                Just
+                                    { lo = { x = 0, y = 0 }, hi = { x = 20, y = 20 } }
+                        in
+                        init "a"
+                            |> Layout.layout defaultConfig
+                            |> Layout.boundOf
+                            |> Expect.equal expect
+                , test "Center of mass is 10,10" <|
+                    \_ ->
+                        let
+                            expect =
+                                { x = 10, y = 10 }
+                        in
+                        init "a"
+                            |> Layout.layout defaultConfig
+                            |> Layout.centerOfMass
+                            |> Expect.equal expect
+                , test "Wrapping shifts center of mass by wrapping border" <|
+                    \_ ->
+                        let
+                            expect =
+                                Just
+                                    { lo = { x = 0, y = 0 }, hi = { x = 40, y = 40 } }
+                        in
+                        init "a"
+                            |> wrap "wrapping"
+                            |> Layout.layout defaultConfig
+                            |> Layout.boundOf
+                            |> Expect.equal expect
+                ]
             , test "No extra outer arrows in 'a -> b'" <|
                 \_ ->
                     let
@@ -166,6 +177,7 @@ suite =
                         |> Layout.layout defaultConfig
                         |> Layout.countVisibleArrows
                         |> Expect.equal 2
+            , todo "Frame tag sub expressions (bubbles)"
             , todo "Sanity check extents inwards in Layout"
             , todo "Fix vertical alignment"
             , todo "Other invariants. No overlap of inner extents"

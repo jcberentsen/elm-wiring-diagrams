@@ -57,6 +57,15 @@ translate t e =
     map (Vec2.translate t) e
 
 
+wrap : Float -> Extent -> Extent
+wrap b e =
+    let
+        b2 =
+            2 * b
+    in
+    { e | hi = Vec2.translate (Vec2 b2 b2) e.hi }
+
+
 map : (b -> a) -> { c | lo : b, hi : b } -> { lo : a, hi : a }
 map f e =
     { lo = f e.lo

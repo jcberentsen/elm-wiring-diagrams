@@ -1,6 +1,7 @@
 module Cartesian exposing
     ( C, Interface
     , before, aside, init, initWith, unit, group, interface
+    , wrap
     )
 
 {-| A module for cartesian structure
@@ -78,6 +79,13 @@ init =
 initWith : Int -> Int -> a -> C a
 initWith i o =
     Internal.initWith (I.init i o)
+
+
+{-| Wrap a part of the structure with a label a
+-}
+wrap : a -> C a -> C a
+wrap =
+    Internal.wrap
 
 
 {-| Put one structure before another

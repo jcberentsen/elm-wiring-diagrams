@@ -8,7 +8,6 @@ import Internal.Extent as Extent exposing (Extent, Polarity(..))
 import Internal.WiringDiagram.Layout as L
 import List
 import List.Nonempty as NE exposing (Nonempty)
-import WiringDiagram.Layout.Box as Box
 import WiringDiagram.Layout.Config as Config exposing (Config)
 import WiringDiagram.Vec2 as Vec2 exposing (Vec2)
 
@@ -16,6 +15,7 @@ import WiringDiagram.Vec2 as Vec2 exposing (Vec2)
 type Layout a
     = Layout
         { inArrows : Nonempty Arrow
+        , wrapping : Maybe { value : a, extent : Extent }
         , contents : List (Layout a)
         , outArrows : Nonempty Arrow
         , extent : Extent
@@ -56,7 +56,7 @@ layout config c =
                     Empty
 
         -- A composition of smaller pieces
-        C interface composition ->
+        C _ composition ->
             let
                 inner =
                     composeLayout config composition
@@ -122,6 +122,7 @@ composeLayout config c =
                 ( [ Layout al, Layout bl ], Just innerExtent ) ->
                     Layout
                         { inArrows = al.inArrows
+                        , wrapping = Nothing
                         , contents = contents
                         , outArrows = bl.outArrows
                         , extent = innerExtent
@@ -143,9 +144,57 @@ composeLayout config c =
                 ( [ Layout al, Layout bl ], Just ne ) ->
                     Layout
                         { inArrows = NE.append al.inArrows bl.inArrows
+                        , wrapping = Nothing
                         , contents = contents
                         , outArrows = NE.append al.outArrows bl.outArrows
                         , extent = Extent.hull ne
+                        }
+
+                _ ->
+                    Empty
+
+        C.Wrap label a ->
+            let
+                -- TODO Add the wrapping label and extend the bound
+                inner =
+                    layout config a
+
+                innerBound =
+                    boundOf inner
+
+                tr =
+                    Vec2 10 10
+
+                ( contents, fullExtent, wrappingExtent ) =
+                    case innerBound of
+                        Just extent ->
+                            let
+                                wrapExtent =
+                                    Extent.wrap 10 extent
+                            in
+                            ( translate tr inner
+                            , Extent.translate tr extent |> Extent.combine wrapExtent
+                            , wrapExtent
+                            )
+
+                        _ ->
+                            let
+                                extent =
+                                    Extent.init { x = 0, y = 0 } { x = 20, y = 20 }
+                            in
+                            ( translate tr inner
+                            , extent
+                            , extent
+                            )
+            in
+            case contents of
+                Layout al ->
+                    Layout
+                        { inArrows = al.inArrows
+                        , wrapping = Just { value = label, extent = wrappingExtent }
+                        , contents = [ contents ]
+                        , outArrows = al.outArrows
+                        , extent = fullExtent
                         }
 
                 _ ->
@@ -253,6 +302,7 @@ horizontalWithArrows inputArrows ( inner, innerExtent ) outArrows =
     in
     Layout
         { inArrows = NE.map (Arrow.translate innerShift) <| inputArrows
+        , wrapping = Nothing
         , contents = [ translate innerShift inner ]
         , outArrows = NE.map (Arrow.translate innerShift) <| outArrows
         , extent =
@@ -267,42 +317,6 @@ horizontalWithArrows inputArrows ( inner, innerExtent ) outArrows =
                         NE.Nonempty innerShifted
                             outputArrowsExtentList
         }
-
-
-finalizeLayout : Layout a -> L.Layout a
-finalizeLayout cl =
-    case cl of
-        Layout l ->
-            let
-                toArrow a =
-                    let
-                        ( t, h ) =
-                            Arrow.ends a
-                    in
-                    L.Arrow
-                        { label = ""
-                        , tail = t
-                        , head = h
-                        }
-
-                inArrows =
-                    NE.map toArrow <| l.inArrows
-
-                outArrows =
-                    NE.map toArrow <| l.outArrows
-            in
-            L.Group
-                { transform = Vec2 0 0
-                , exterior = Nothing
-                , interiorTransform = Vec2 0 0
-                , interior = NE.toList inArrows ++ List.map finalizeLayout l.contents ++ NE.toList outArrows
-                }
-
-        Leaf l ->
-            L.Item <| Box.fromExtent (Just l.value) l.extent
-
-        Empty ->
-            L.empty
 
 
 translate : Vec2 -> Layout a -> Layout a

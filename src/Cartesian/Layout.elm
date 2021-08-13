@@ -11,6 +11,7 @@ module Cartesian.Layout exposing (toLayout, toLayoutWithConfig)
 
 import Internal.Cartesian exposing (C)
 import Internal.Cartesian.Layout as Layout
+import Internal.Cartesian.Layout.Convert as Convert
 import Internal.WiringDiagram.Layout as L
 import WiringDiagram.Layout.Config as Config exposing (Config)
 import WiringDiagram.Vec2 exposing (Vec2)
@@ -38,4 +39,4 @@ This is unfinished, and won't do anything interesting yet.
 -}
 toLayoutWithConfig : Config a -> C a -> L.Layout a
 toLayoutWithConfig config c =
-    Layout.finalizeLayout <| Layout.layout config c
+    Convert.finalizeLayout <| Layout.layout config c
