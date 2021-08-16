@@ -1,33 +1,9 @@
-module WiringDiagram.Svg exposing
-    ( view, Viewport, simpleDiagramToSvg, simpleLayoutToSvg, layoutToSvg, diagramToSvg
-    , smallViewport, mediumViewport, wideViewport, largeViewport
-    , layoutToSvgWithConfig
-    )
-
-{-| Convert a Layout of a WireDiagram to SVG
-
-@docs view, Viewport, simpleDiagramToSvg, simpleLayoutToSvg, layoutToSvg, diagramToSvg
-
-
-## Viewport defaults
-
-@docs smallViewport, mediumViewport, wideViewport, largeViewport
-
-
-# Customization
-
-@docs layoutToSvgWithConfig
-
--}
+module Internal.Svg exposing (..)
 
 import Html exposing (Html)
-import Internal.WiringDiagram.Layout as Layout exposing (Layout)
+import Internal.Svg.Config as Config exposing (Config)
 import Svg exposing (Svg, svg)
 import Svg.Attributes exposing (..)
-import WiringDiagram exposing (..)
-import WiringDiagram.Layout.Box exposing (..)
-import WiringDiagram.Svg.Arrow exposing (arrow)
-import WiringDiagram.Svg.Config as Config exposing (Config)
 
 
 {-| Placement and dimensions of a Viewport to render SVG inside
@@ -59,66 +35,6 @@ view vp svgItems =
         svgItems
 
 
-{-| Render a Layout to Svg
--}
-layoutToSvg : Layout b -> Svg msg
-layoutToSvg =
-    layoutToSvgWithConfig <| Config.initWithLabelToString <| always "_"
-
-
-{-| Render a (Layout String) to Svg
--}
-simpleLayoutToSvg : Layout String -> Svg msg
-simpleLayoutToSvg =
-    layoutToSvgWithConfig Config.forStringLabels
-
-
-{-| Render a Layout to Svg with configurable labeling
--}
-layoutToSvgWithConfig : Config a -> Layout a -> Svg msg
-layoutToSvgWithConfig svgConfig l =
-    case l of
-        Layout.Group g ->
-            let
-                tx =
-                    toSvgTransform g.transform
-
-                itx =
-                    toSvgTransform g.interiorTransform
-
-                inner =
-                    Svg.g [ itx ] <|
-                        List.map (layoutToSvgWithConfig svgConfig) g.interior
-            in
-            case g.exterior of
-                Just b ->
-                    Svg.g [ tx ] <|
-                        [ box svgConfig b, inner ]
-
-                _ ->
-                    Svg.g [ tx ] [ inner ]
-
-        Layout.Item b ->
-            box svgConfig b
-
-        Layout.Arrow arr ->
-            arrow arr
-
-
-{-| Shortcut render a Diagram (via Layout) to Svg
--}
-diagramToSvg : Diagram a -> Svg msg
-diagramToSvg d =
-    layoutToSvg <| Layout.layoutDiagram d
-
-
-{-| Shortcut render a Diagram with String labels (via Layout) to Svg
--}
-simpleDiagramToSvg : Diagram String -> Svg msg
-simpleDiagramToSvg d =
-    simpleLayoutToSvg <| Layout.layoutDiagram d
-
-
 toSvgTransform : { a | x : Float, y : Float } -> Svg.Attribute msg
 toSvgTransform t =
     transform <|
@@ -129,7 +45,10 @@ toSvgTransform t =
             ++ ")"
 
 
-box : Config a -> Box a -> Svg msg
+box :
+    Config a
+    -> { b | lo : { c | x : Float, y : Float }, width : Float, height : Float, radius : Float, label : Maybe a }
+    -> Svg msg
 box svgConfig b =
     Svg.g []
         [ Svg.rect

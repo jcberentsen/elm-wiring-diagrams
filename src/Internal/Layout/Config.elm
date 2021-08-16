@@ -8,7 +8,6 @@ module Internal.Layout.Config exposing (Config(..), initWithArrowLablerAndSpacin
 
 import Internal.Bound as Bound exposing (Bound)
 import Internal.Vec2 exposing (..)
-import WiringDiagram exposing (..)
 
 
 {-| The Config type

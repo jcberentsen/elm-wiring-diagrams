@@ -1,18 +1,16 @@
 {
     "type": "package",
     "name": "jcberentsen/elm-wiring-diagrams",
-    "summary": "A package for SVG wiring-diagrams",
+    "summary": "A package for rendering wiring-diagrams to SVG",
     "license": "BSD-3-Clause",
     "version": "3.2.0",
     "exposed-modules": [
-        "WiringDiagram",
-        "WiringDiagram.Layout",
-        "WiringDiagram.Svg",
-        "WiringDiagram.Svg.Config",
-        "WiringDiagram.Examples",
         "Cartesian",
         "Cartesian.Layout",
+        "Cartesian.Svg",
         "Diagram.Layout.Config",
+        "Diagram.Svg.Config",
+        "Diagram.Svg",
         "Diagram.Bound",
         "Diagram.Vec2",
         "Diagram.Extent"

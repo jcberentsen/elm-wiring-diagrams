@@ -1,4 +1,4 @@
-module WiringDiagram.Svg.Arrow exposing (arrow)
+module Internal.Svg.Arrow exposing (arrow)
 
 import Internal.Vec2 exposing (..)
 import Svg exposing (Svg)

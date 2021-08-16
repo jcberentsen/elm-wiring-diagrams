@@ -177,6 +177,11 @@ suite =
                         |> Layout.layout defaultConfig
                         |> Layout.countVisibleArrows
                         |> Expect.equal 2
+            , todo "C.Layout.Svg directly"
+            , todo "Vertical spacing"
+            , todo "Horizontal spacing"
+            , todo "Arrow sizing"
+            , todo "Wrapper padding"
             , todo "Frame tag sub expressions (bubbles)"
             , todo "Sanity check extents inwards in Layout"
             , todo "Fix vertical alignment"
@@ -187,4 +192,8 @@ suite =
 
 defaultConfig : Config.Config b
 defaultConfig =
-    Config.initWithArrowLablerAndSpacing (\_ _ -> "arrow") (Vec2 40 20)
+    let
+        spacing =
+            Vec2 0 0
+    in
+    Config.initWithArrowLablerAndSpacing (\_ _ -> "arrow") spacing

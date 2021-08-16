@@ -5,7 +5,7 @@ import Internal.Bound as Bound exposing (Bound)
 import Internal.Cartesian as C exposing (C(..))
 import Internal.Cartesian.Interface exposing (Interface(..))
 import Internal.Extent as Extent exposing (Extent, Polarity(..))
-import Internal.Layout.Config as Config exposing (Config)
+import Internal.Layout.Config as Config exposing (Config(..))
 import Internal.Vec2 as Vec2 exposing (Vec2)
 import List
 import List.Nonempty as NE exposing (Nonempty)
@@ -108,7 +108,7 @@ composeLayout config c =
                     layout config r
 
                 hz =
-                    horizontal [ a, b ]
+                    horizontal config [ a, b ]
 
                 contents =
                     List.concat <|
@@ -133,7 +133,7 @@ composeLayout config c =
         C.Aside a b ->
             let
                 contents =
-                    vertical [ layout config a, layout config b ]
+                    vertical config [ layout config a, layout config b ]
 
                 extents =
                     NE.fromList <|
@@ -360,8 +360,8 @@ a
 b
 
 -}
-horizontal : List (Layout a) -> List (Layout a)
-horizontal items =
+horizontal : Config a -> List (Layout a) -> List (Layout a)
+horizontal (Config config) items =
     let
         bounds =
             List.map boundOf items
@@ -370,7 +370,7 @@ horizontal items =
         shiftByBound b xs =
             case ( b, xs ) of
                 ( Just extent, x :: _ ) ->
-                    x + Extent.width extent :: xs
+                    x + Extent.width extent + config.spacing.x :: xs
 
                 ( Just extent, [] ) ->
                     [ Extent.width extent ]
@@ -401,8 +401,8 @@ This will center items along a horizontal
      c
 
 -}
-vertical : List (Layout a) -> List (Layout a)
-vertical items =
+vertical : Config a -> List (Layout a) -> List (Layout a)
+vertical (Config config) items =
     let
         bounds =
             List.map boundOf items
@@ -411,7 +411,7 @@ vertical items =
         shiftByBound b ys =
             case ( b, ys ) of
                 ( Just extent, y :: _ ) ->
-                    y + Extent.height extent :: ys
+                    y + Extent.height extent + config.spacing.y :: ys
 
                 ( Just extent, [] ) ->
                     [ Extent.height extent ]
