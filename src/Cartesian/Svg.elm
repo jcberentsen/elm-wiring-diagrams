@@ -20,8 +20,11 @@ import Svg exposing (Svg)
 
 
 {-| Layout a cartesian structure and render to Svg
-This uses some silly defaults. Use this to do some simple testing.
-Otherwise use the toSvgWith function that lets you control layout and styling
+
+This uses some silly defaults. Use this for early testing.
+
+Use the toSvgWith function to control layout and styling in more detail
+
 -}
 toSvg : C a -> Svg msg
 toSvg =
@@ -36,9 +39,9 @@ toSvg =
 
 {-| A type for configuring Layout and Svg styling
 -}
-type alias Styling a =
+type alias Styling a msg =
     { layoutConfig : Layout.Config a
-    , svgConfig : Svg.Config a
+    , svgConfig : Svg.Config a msg
     }
 
 
@@ -50,6 +53,6 @@ The layout styling lets you control, sizes, padding, arrow measurements...
 The svg styling lets you control fonts, colors, strokes, transparency...
 
 -}
-toSvgWith : Styling a -> C a -> Svg msg
+toSvgWith : Styling a msg -> C a -> Svg msg
 toSvgWith styling c =
     Svg.layoutToSvgWithConfig styling.svgConfig <| Layout.layout styling.layoutConfig c

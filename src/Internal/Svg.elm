@@ -1,7 +1,7 @@
 module Internal.Svg exposing (..)
 
 import Html exposing (Html)
-import Internal.Svg.Config as Config exposing (Config)
+import Internal.Svg.Config exposing (Config(..))
 import Svg exposing (Svg, svg)
 import Svg.Attributes exposing (..)
 
@@ -46,12 +46,12 @@ toSvgTransform t =
 
 
 box :
-    Config a
+    Config a msg
     -> { b | lo : { c | x : Float, y : Float }, width : Float, height : Float, radius : Float, label : Maybe a }
     -> Svg msg
-box svgConfig b =
-    Svg.g []
-        [ Svg.rect
+box (Config svgConfig) b =
+    let
+        rectAttributes =
             [ x <| String.fromFloat b.lo.x
             , y <| String.fromFloat b.lo.y
             , width <| String.fromFloat b.width
@@ -64,29 +64,41 @@ box svgConfig b =
             , strokeOpacity "0.5"
             , fill "#7da"
             ]
+                ++ svgConfig.toBoxAttributes b.label
+    in
+    Svg.g []
+        [ Svg.rect rectAttributes
             []
         , case b.label of
             Just label ->
-                svgBoxText
+                svgBoxText (svgConfig.toTextAttributes label)
                     { x = b.lo.x + b.width / 2
                     , y = b.lo.y + b.height * 3 / 5
                     }
-                    (Config.applyToLabelString svgConfig label)
+                    (svgConfig.toLabelString label)
 
             _ ->
                 Svg.g [] []
         ]
 
 
-svgBoxText : { a | x : Float, y : Float } -> String -> Svg msg
-svgBoxText pos label =
-    Svg.text_
-        [ x <| String.fromFloat pos.x
-        , y <| String.fromFloat pos.y
-        , textAnchor "middle"
-        , stroke "black"
-        , fontSize "16"
-        ]
+svgBoxText :
+    List (Svg.Attribute msg)
+    -> { a | x : Float, y : Float }
+    -> String
+    -> Svg msg
+svgBoxText overloadAttrs pos label =
+    let
+        attrs =
+            [ x <| String.fromFloat pos.x
+            , y <| String.fromFloat pos.y
+            , textAnchor "middle"
+            , stroke "black"
+            , fontSize "24px"
+            ]
+                ++ overloadAttrs
+    in
+    Svg.text_ attrs
         [ Svg.text label ]
 
 
