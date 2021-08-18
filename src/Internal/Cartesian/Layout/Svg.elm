@@ -53,8 +53,7 @@ layoutToSvgWithConfig svgConfig cl =
             in
             case exterior of
                 Just b ->
-                    Svg.g [] <|
-                        [ Svg.box svgConfig b, inner ]
+                    Svg.wrap svgConfig b inner
 
                 _ ->
                     Svg.g [] [ inner ]

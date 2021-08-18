@@ -45,6 +45,20 @@ toSvgTransform t =
             ++ ")"
 
 
+wrap :
+    Config a msg
+    -> { b | label : Maybe a, lo : { c | x : Float, y : Float }, width : Float, height : Float, radius : Float }
+    -> Svg msg
+    -> Svg msg
+wrap svgConfig b inner =
+    let
+        (Config config) =
+            svgConfig
+    in
+    Svg.g (config.toBoxAttributes b.label)
+        [ box svgConfig b, inner ]
+
+
 box :
     Config a msg
     -> { b | lo : { c | x : Float, y : Float }, width : Float, height : Float, radius : Float, label : Maybe a }
@@ -58,28 +72,26 @@ box (Config svgConfig) b =
             , height <| String.fromFloat b.height
             , rx <| String.fromFloat b.radius
             , ry <| String.fromFloat b.radius
-            , fillOpacity "0.5"
+            , fillOpacity "0.2"
             , stroke "grey"
             , strokeWidth "1"
             , strokeOpacity "0.5"
-            , fill "#7da"
             ]
-                ++ svgConfig.toBoxAttributes b.label
     in
-    Svg.g []
-        [ Svg.rect rectAttributes
-            []
-        , case b.label of
-            Just label ->
-                svgBoxText (svgConfig.toTextAttributes label)
-                    { x = b.lo.x + b.width / 2
-                    , y = b.lo.y + b.height * 3 / 5
-                    }
-                    (svgConfig.toLabelString label)
+    Svg.g [] <|
+        Svg.rect rectAttributes []
+            :: (case b.label of
+                    Just label ->
+                        [ svgBoxText (svgConfig.toTextAttributes label)
+                            { x = b.lo.x + b.width / 2
+                            , y = b.lo.y + b.height * 3 / 5
+                            }
+                            (svgConfig.toLabelString label)
+                        ]
 
-            _ ->
-                Svg.g [] []
-        ]
+                    _ ->
+                        []
+               )
 
 
 svgBoxText :
@@ -95,6 +107,7 @@ svgBoxText overloadAttrs pos label =
             , textAnchor "middle"
             , stroke "black"
             , fontSize "24px"
+            , pointerEvents "none"
             ]
                 ++ overloadAttrs
     in
