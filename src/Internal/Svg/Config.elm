@@ -3,7 +3,7 @@ module Internal.Svg.Config exposing (..)
 {-| Preliminary way to control how labels turn into String for SVG
 -}
 
-import Svg
+import Svg exposing (Svg)
 
 
 type Config a msg
@@ -11,6 +11,7 @@ type Config a msg
         { toLabelString : a -> String
         , toTextAttributes : a -> List (Svg.Attribute msg)
         , toBoxAttributes : Maybe a -> List (Svg.Attribute msg)
+        , wrapFunction : Maybe a -> List (Svg msg) -> Svg msg
         }
 
 
@@ -25,6 +26,7 @@ default =
         { toLabelString = always "."
         , toTextAttributes = always []
         , toBoxAttributes = always []
+        , wrapFunction = always <| Svg.g []
         }
 
 
@@ -50,6 +52,14 @@ withTextAttributes attributes (Config c) =
 withBoxAttributes : (Maybe a -> List (Svg.Attribute msg)) -> Config a msg -> Config a msg
 withBoxAttributes toAttributes (Config c) =
     Config { c | toBoxAttributes = toAttributes }
+
+
+withCellWrapFunction :
+    (Maybe a -> List (Svg msg) -> Svg msg)
+    -> Config a msg
+    -> Config a msg
+withCellWrapFunction wrapFunction (Config c) =
+    Config { c | wrapFunction = wrapFunction }
 
 
 {-| Init needs a labelToString function

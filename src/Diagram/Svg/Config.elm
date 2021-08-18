@@ -1,12 +1,14 @@
 module Diagram.Svg.Config exposing
     ( Config, forStringLabels, initWithLabelToString, default, withLabelToString
     , withTextAttributes, withTextAttributesFunction, withCellAttributes, withCellAttributesFunction
+    , withCellWrappingFunction
     )
 
 {-| Configure how to convert Layout Labels to Strings for Svg output
 
 @docs Config, forStringLabels, initWithLabelToString, default, withLabelToString
 @docs withTextAttributes, withTextAttributesFunction, withCellAttributes, withCellAttributesFunction
+@docs withCellWrappingFunction
 
 -}
 
@@ -76,6 +78,24 @@ Avoid modifying geometry, as this will likely mess up the layout
 withCellAttributes : List (Svg.Attribute msg) -> Config a msg -> Config a msg
 withCellAttributes attributes =
     I.withBoxAttributes (always attributes)
+
+
+{-| Overload cell wrapping
+
+Lets you configure how a list of inner Svg elements will be wrapped.
+
+This allows you to set up onClick event attributes or using Svg.a for hyperlinking when the inner svg is clicked.
+
+-}
+withCellWrappingFunction :
+    (Maybe a
+     -> List (Svg.Svg msg)
+     -> Svg.Svg msg
+    )
+    -> Config a msg
+    -> Config a msg
+withCellWrappingFunction wrapFunction =
+    I.withCellWrapFunction wrapFunction
 
 
 {-| Overload attributes for each cell

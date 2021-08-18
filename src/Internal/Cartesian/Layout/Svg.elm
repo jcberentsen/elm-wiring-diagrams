@@ -46,17 +46,11 @@ layoutToSvgWithConfig svgConfig cl =
 
                 interior =
                     List.map (layoutToSvgWithConfig svgConfig) l.contents
-            in
-            let
-                inner =
-                    Svg.g [] <| arrows ++ interior
-            in
-            case exterior of
-                Just b ->
-                    Svg.wrap svgConfig b inner
 
-                _ ->
-                    Svg.g [] [ inner ]
+                inners =
+                    arrows ++ interior
+            in
+            Svg.wrap svgConfig exterior inners
 
         Leaf l ->
             let

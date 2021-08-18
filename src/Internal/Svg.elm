@@ -47,16 +47,23 @@ toSvgTransform t =
 
 wrap :
     Config a msg
-    -> { b | label : Maybe a, lo : { c | x : Float, y : Float }, width : Float, height : Float, radius : Float }
+    -> Maybe { b | label : Maybe a, lo : { c | x : Float, y : Float }, width : Float, height : Float, radius : Float }
+    -> List (Svg msg)
     -> Svg msg
-    -> Svg msg
-wrap svgConfig b inner =
+wrap svgConfig exterior inners =
     let
         (Config config) =
             svgConfig
     in
-    Svg.g (config.toBoxAttributes b.label)
-        [ box svgConfig b, inner ]
+    case exterior of
+        Just b ->
+            config.wrapFunction b.label <|
+                -- Svg.g (config.toBoxAttributes b.label)
+                box svgConfig b
+                    :: inners
+
+        _ ->
+            config.wrapFunction Nothing inners
 
 
 box :
@@ -77,6 +84,7 @@ box (Config svgConfig) b =
             , strokeWidth "1"
             , strokeOpacity "0.5"
             ]
+                ++ svgConfig.toBoxAttributes b.label
     in
     Svg.g [] <|
         Svg.rect rectAttributes []
