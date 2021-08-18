@@ -21,6 +21,12 @@ type alias Viewport =
 view : Viewport -> List (Svg msg) -> Html msg
 view vp svgItems =
     let
+        xlo =
+            String.fromFloat vp.xMin
+
+        ylo =
+            String.fromFloat vp.yMin
+
         w =
             String.fromFloat vp.width
 
@@ -30,7 +36,7 @@ view vp svgItems =
     svg
         [ width w
         , height h
-        , viewBox <| "0 0 " ++ w ++ " " ++ h
+        , viewBox <| String.join " " <| [ xlo, ylo, w, h ] -- 0 0 " ++ w ++ " " ++ h
         ]
         svgItems
 
