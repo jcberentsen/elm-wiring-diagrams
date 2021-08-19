@@ -1,6 +1,7 @@
 module Cartesian exposing
     ( C, Interface
     , before, aside, init, initWith, unit, group, interface, wrap
+    , map
     )
 
 {-| A module for cartesian structure
@@ -22,6 +23,11 @@ The Cost of Compositionality: A High-Performance Implementation of String Diagra
 ## Usage
 
 @docs before, aside, init, initWith, unit, group, interface, wrap
+
+
+# Convert the inner labels
+
+@docs map
 
 -}
 
@@ -124,3 +130,10 @@ aside =
 interface : C a -> Interface
 interface =
     Internal.interface
+
+
+{-| Map a function over all the label a's
+-}
+map : (a -> b) -> C a -> C b
+map =
+    Internal.map

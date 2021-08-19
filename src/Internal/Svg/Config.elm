@@ -3,6 +3,7 @@ module Internal.Svg.Config exposing (..)
 {-| Preliminary way to control how labels turn into String for SVG
 -}
 
+import Internal.Vec2 exposing (Vec2)
 import Svg exposing (Svg)
 
 
@@ -12,6 +13,7 @@ type Config a msg
         , toTextAttributes : a -> List (Svg.Attribute msg)
         , toBoxAttributes : Maybe a -> List (Svg.Attribute msg)
         , wrapFunction : Maybe a -> List (Svg msg) -> Svg msg
+        , labelPosition : LabelPositionFunction a
         }
 
 
@@ -27,7 +29,32 @@ default =
         , toTextAttributes = always []
         , toBoxAttributes = always []
         , wrapFunction = always <| Svg.g []
+        , labelPosition = labelCenter
         }
+
+
+type alias LabelPositionFunction a =
+    { lo : Vec2
+    , width : Float
+    , height : Float
+    , radius : Float
+    , label : Maybe a
+    }
+    -> Vec2
+
+
+labelCenter : LabelPositionFunction a
+labelCenter b =
+    { x = b.lo.x + b.width / 2
+    , y = b.lo.y + b.height * 3 / 5
+    }
+
+
+bottomLeft : LabelPositionFunction a
+bottomLeft b =
+    { x = b.lo.x + 50
+    , y = b.lo.y + b.height - 50
+    }
 
 
 {-| Simple starting config when labels are already String
@@ -60,6 +87,14 @@ withCellWrapFunction :
     -> Config a msg
 withCellWrapFunction wrapFunction (Config c) =
     Config { c | wrapFunction = wrapFunction }
+
+
+withLabelPositionFunction :
+    LabelPositionFunction a
+    -> Config a msg
+    -> Config a msg
+withLabelPositionFunction f (Config c) =
+    Config { c | labelPosition = f }
 
 
 {-| Init needs a labelToString function

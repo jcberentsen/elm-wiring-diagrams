@@ -154,12 +154,18 @@ composeLayout config c =
 
         C.Wrap label a ->
             let
-                -- TODO Add the wrapping label and extend the bound
                 inner =
                     layout config a
 
+                configuredBound =
+                    let
+                        (Config cc) =
+                            config
+                    in
+                    cc.leafExtent label
+
                 innerBound =
-                    boundOf inner
+                    Bound.hull [ configuredBound, boundOf inner ]
 
                 tr =
                     Vec2 10 10

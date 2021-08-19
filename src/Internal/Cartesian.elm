@@ -7,6 +7,7 @@ module Internal.Cartesian exposing
     , init
     , initWith
     , interface
+    , map
     , unit
     , wrap
     )
@@ -24,6 +25,28 @@ type Composed a
     | Aside (C a) (C a)
     | Sequenced (C a) (C a)
     | Wrap a (C a)
+
+
+map : (a -> b) -> C a -> C b
+map f c =
+    case c of
+        Unit ->
+            Unit
+
+        C i cs ->
+            C i <|
+                case cs of
+                    Leaf a ->
+                        Leaf (f a)
+
+                    Aside a b ->
+                        Aside (map f a) (map f b)
+
+                    Sequenced a b ->
+                        Sequenced (map f a) (map f b)
+
+                    Wrap a b ->
+                        Wrap (f a) (map f b)
 
 
 unit : C a

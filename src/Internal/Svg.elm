@@ -2,6 +2,7 @@ module Internal.Svg exposing (..)
 
 import Html exposing (Html)
 import Internal.Svg.Config exposing (Config(..))
+import Internal.Vec2 exposing (Vec2)
 import Svg exposing (Svg, svg)
 import Svg.Attributes exposing (..)
 
@@ -14,6 +15,10 @@ type alias Viewport =
     , xMin : Float
     , yMin : Float
     }
+
+
+type alias Boxy a =
+    { label : Maybe a, lo : Vec2, width : Float, height : Float, radius : Float }
 
 
 {-| Render a list of Svg items in a viewport to Html
@@ -36,12 +41,12 @@ view vp svgItems =
     svg
         [ width w
         , height h
-        , viewBox <| String.join " " <| [ xlo, ylo, w, h ] -- 0 0 " ++ w ++ " " ++ h
+        , viewBox <| String.join " " <| [ xlo, ylo, w, h ]
         ]
         svgItems
 
 
-toSvgTransform : { a | x : Float, y : Float } -> Svg.Attribute msg
+toSvgTransform : Vec2 -> Svg.Attribute msg
 toSvgTransform t =
     transform <|
         "translate("
@@ -53,7 +58,7 @@ toSvgTransform t =
 
 wrap :
     Config a msg
-    -> Maybe { b | label : Maybe a, lo : { c | x : Float, y : Float }, width : Float, height : Float, radius : Float }
+    -> Maybe (Boxy a)
     -> List (Svg msg)
     -> Svg msg
 wrap svgConfig exterior inners =
@@ -74,7 +79,7 @@ wrap svgConfig exterior inners =
 
 box :
     Config a msg
-    -> { b | lo : { c | x : Float, y : Float }, width : Float, height : Float, radius : Float, label : Maybe a }
+    -> Boxy a
     -> Svg msg
 box (Config svgConfig) b =
     let
@@ -96,10 +101,12 @@ box (Config svgConfig) b =
         Svg.rect rectAttributes []
             :: (case b.label of
                     Just label ->
+                        let
+                            textPosition =
+                                svgConfig.labelPosition b
+                        in
                         [ svgBoxText (svgConfig.toTextAttributes label)
-                            { x = b.lo.x + b.width / 2
-                            , y = b.lo.y + b.height * 3 / 5
-                            }
+                            textPosition
                             (svgConfig.toLabelString label)
                         ]
 
@@ -110,7 +117,7 @@ box (Config svgConfig) b =
 
 svgBoxText :
     List (Svg.Attribute msg)
-    -> { a | x : Float, y : Float }
+    -> Vec2
     -> String
     -> Svg msg
 svgBoxText overloadAttrs pos label =

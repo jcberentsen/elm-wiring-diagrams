@@ -2,6 +2,7 @@ module Diagram.Svg.Config exposing
     ( Config, forStringLabels, initWithLabelToString, default, withLabelToString
     , withTextAttributes, withTextAttributesFunction, withCellAttributes, withCellAttributesFunction
     , withCellWrappingFunction
+    , withLabelPositionFunction, LabelPositionFunction, centered, bottomLeft
     )
 
 {-| Configure how to convert Layout Labels to Strings for Svg output
@@ -9,6 +10,11 @@ module Diagram.Svg.Config exposing
 @docs Config, forStringLabels, initWithLabelToString, default, withLabelToString
 @docs withTextAttributes, withTextAttributesFunction, withCellAttributes, withCellAttributesFunction
 @docs withCellWrappingFunction
+
+
+## Control label positions
+
+@docs withLabelPositionFunction, LabelPositionFunction, centered, bottomLeft
 
 -}
 
@@ -20,6 +26,15 @@ import Svg
 -}
 type alias Config a msg =
     I.Config a msg
+
+
+{-| Type of a function that can determine a text position within a box
+
+This can be used for centering and aligning labels towards edges or corners,
+
+-}
+type alias LabelPositionFunction a =
+    I.LabelPositionFunction a
 
 
 {-| Simple starting config. All labels will render as a dot
@@ -110,6 +125,31 @@ Avoid modifying geometry, as this will likely mess up the layout
 withCellAttributesFunction : (Maybe a -> List (Svg.Attribute msg)) -> Config a msg -> Config a msg
 withCellAttributesFunction func =
     I.withBoxAttributes func
+
+
+{-| Control the position of labels within boxes
+The LabelPositionFunction must give positions that are inside the given box.
+-}
+withLabelPositionFunction :
+    LabelPositionFunction a
+    -> Config a msg
+    -> Config a msg
+withLabelPositionFunction =
+    I.withLabelPositionFunction
+
+
+{-| LabelPositionFunction for centering labels in box
+-}
+centered : LabelPositionFunction a
+centered =
+    I.labelCenter
+
+
+{-| LabelPositionFunction for placing labels in lower left corner
+-}
+bottomLeft : LabelPositionFunction a
+bottomLeft =
+    I.labelCenter
 
 
 {-| Init needs a labelToString function
