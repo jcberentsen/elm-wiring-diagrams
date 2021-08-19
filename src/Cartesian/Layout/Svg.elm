@@ -16,7 +16,6 @@ import Internal.Cartesian.Layout.Svg as Svg
 import Internal.Extent as Extent
 import Internal.Svg as Svg
 import Internal.Svg.Config as Svg
-import Internal.Vec2 exposing (Vec2)
 import Svg exposing (Svg)
 
 

@@ -46,13 +46,13 @@ type alias LabelPositionFunction a =
 labelCenter : LabelPositionFunction a
 labelCenter b =
     { x = b.lo.x + b.width / 2
-    , y = b.lo.y + b.height * 3 / 5
+    , y = b.lo.y + b.height / 2 -- * 3 / 5
     }
 
 
 bottomLeft : LabelPositionFunction a
 bottomLeft b =
-    { x = b.lo.x + 24
+    { x = b.lo.x + 4
     , y = b.lo.y + b.height - 4
     }
 

@@ -69,7 +69,6 @@ wrap svgConfig exterior inners =
     case exterior of
         Just b ->
             config.wrapFunction b.label <|
-                -- Svg.g (config.toBoxAttributes b.label)
                 box svgConfig b
                     :: inners
 
@@ -126,6 +125,7 @@ svgBoxText overloadAttrs pos label =
             [ x <| String.fromFloat pos.x
             , y <| String.fromFloat pos.y
             , textAnchor "middle"
+            , dominantBaseline "middle"
             , stroke "black"
             , fontSize "24px"
             , pointerEvents "none"
