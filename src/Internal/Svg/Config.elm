@@ -52,8 +52,8 @@ labelCenter b =
 
 bottomLeft : LabelPositionFunction a
 bottomLeft b =
-    { x = b.lo.x + 50
-    , y = b.lo.y + b.height - 50
+    { x = b.lo.x + 24
+    , y = b.lo.y + b.height - 4
     }
 
 

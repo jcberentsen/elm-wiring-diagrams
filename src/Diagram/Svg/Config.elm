@@ -149,7 +149,7 @@ centered =
 -}
 bottomLeft : LabelPositionFunction a
 bottomLeft =
-    I.labelCenter
+    I.bottomLeft
 
 
 {-| Init needs a labelToString function
