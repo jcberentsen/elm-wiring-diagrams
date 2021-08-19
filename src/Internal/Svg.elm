@@ -120,20 +120,35 @@ svgBoxText :
     -> String
     -> Svg msg
 svgBoxText overloadAttrs pos label =
-    let
-        attrs =
-            [ x <| String.fromFloat pos.x
-            , y <| String.fromFloat pos.y
-            , textAnchor "middle"
-            , dominantBaseline "middle"
-            , stroke "black"
-            , fontSize "24px"
-            , pointerEvents "none"
-            ]
-                ++ overloadAttrs
-    in
-    Svg.text_ attrs
-        [ Svg.text label ]
+    case String.words label of
+        firstWord :: rest ->
+            let
+                lineDelta =
+                    10
+
+                attrs =
+                    [ x <| String.fromFloat pos.x
+                    , y <| String.fromFloat <| pos.y - toFloat (lineDelta * List.length rest) / 2
+                    , textAnchor "middle"
+                    , dominantBaseline "middle"
+                    , stroke "black"
+                    , fontSize "24px"
+                    , pointerEvents "none"
+                    ]
+                        ++ overloadAttrs
+
+                tspan =
+                    Svg.tspan
+                        [ x <| String.fromFloat pos.x
+                        , dy "10px"
+                        ]
+                        << List.singleton
+                        << Svg.text
+            in
+            Svg.text_ attrs <| Svg.text firstWord :: List.map tspan rest
+
+        _ ->
+            Svg.text ""
 
 
 origin : { width : number, height : number, xMin : number, yMin : number }
