@@ -381,7 +381,7 @@ horizontal (Config config) ( a, b ) =
             translate { x = x, y = 0 } <|
                 horizontallyCentered maxHeight sub
     in
-    ( a, moveTo b shift )
+    ( moveTo a 0, moveTo b shift )
 
 
 {-| Back to back vertical layout
@@ -419,7 +419,7 @@ vertical (Config config) ( a, b ) =
         moveTo sub v =
             translate { x = 0, y = v } <| verticallyCentered maxRange sub
     in
-    ( a, moveTo b shift )
+    ( moveTo a 0, moveTo b shift )
 
 
 horizontallyCentered : Float -> Layout b -> Layout b
