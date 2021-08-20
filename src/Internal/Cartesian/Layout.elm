@@ -62,26 +62,7 @@ layout config c =
 
         -- A composition of smaller pieces
         C _ composition ->
-            let
-                inner =
-                    composeLayout config composition
-
-                innerBound =
-                    boundOf inner
-            in
-            case ( inner, innerBound ) of
-                ( Layout il, Just innerExtent ) ->
-                    -- Line up the arrow stubs with the inner arrows
-                    Layout
-                        { inArrows = il.inArrows
-                        , wrapping = Nothing
-                        , contents = [ inner ]
-                        , outArrows = il.outArrows
-                        , extent = innerExtent
-                        }
-
-                _ ->
-                    Empty
+            composeLayout config composition
 
 
 composeLayout : Config a -> C.Composed a -> Layout a
