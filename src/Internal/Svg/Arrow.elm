@@ -10,17 +10,17 @@ import Svg.PathD exposing (Segment(..), pathD)
 -- Using https://package.elm-lang.org/packages/Spaxe/svg-pathd/latest/Svg-PathD
 
 
-arrow : { a | tail : Vec2, head : Vec2 } -> Svg msg
+arrow : { a | tail : Vec2, adjust : Float, head : Vec2 } -> Svg msg
 arrow a =
     let
         start =
             ( a.tail.x, a.tail.y )
 
         ascent =
-            ( (a.tail.x + a.head.x) / 2, a.tail.y )
+            ( (a.tail.x + a.head.x + a.adjust) / 2, a.tail.y )
 
         descent =
-            ( (a.tail.x + a.head.x) / 2, a.head.y )
+            ( (a.tail.x + a.head.x + a.adjust) / 2, a.head.y )
 
         end =
             ( a.head.x, a.head.y )

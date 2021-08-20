@@ -20,12 +20,13 @@ layoutToSvgWithConfig svgConfig cl =
             let
                 toArrow a =
                     let
-                        ( t, h ) =
+                        ( t, adjust, h ) =
                             Arrow.ends a
                     in
                     Arrow.arrow <|
                         { label = ""
                         , tail = t
+                        , adjust = adjust
                         , head = h
                         }
 

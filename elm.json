@@ -3,7 +3,7 @@
     "name": "jcberentsen/elm-wiring-diagrams",
     "summary": "A package for rendering wiring-diagrams to SVG",
     "license": "BSD-3-Clause",
-    "version": "5.3.2",
+    "version": "5.3.3",
     "exposed-modules": [
         "Cartesian",
         "Cartesian.Layout",

@@ -1,6 +1,6 @@
 module Internal.Arrow exposing
-    ( Arrow, translate
-    , boundOf, connect, ends, forEdge, forEdgeWith, isVisible, truncate
+    ( Arrow, init, translate
+    , boundOf, connect, ends, forEdge, forEdgeWith, isVisible, safe, safeTo, truncate
     )
 
 {-| Arrow module
@@ -24,11 +24,13 @@ type Arrow
     = Arrow
         { tailPoint : Vec2
         , meander : Meander
+        , adjust : Float
         , headPoint : Vec2
         }
     | Port
         { pos : Vec2
         , polarity : Polarity
+        , adjust : Float
         }
 
 
@@ -45,14 +47,14 @@ type alias Config =
     { headLength : Float }
 
 
-ends : Arrow -> ( Vec2, Vec2 )
+ends : Arrow -> ( Vec2, Float, Vec2 )
 ends a =
     case a of
         Arrow arr ->
-            ( arr.tailPoint, arr.headPoint )
+            ( arr.tailPoint, arr.adjust, arr.headPoint )
 
         Port p ->
-            ( p.pos, p.pos )
+            ( p.pos, 0, p.pos )
 
 
 truncate : Polarity -> Arrow -> Arrow
@@ -61,10 +63,10 @@ truncate p a =
         Arrow arrow ->
             case p of
                 In ->
-                    Port { pos = arrow.headPoint, polarity = p }
+                    Port { pos = arrow.headPoint, polarity = p, adjust = 0 }
 
                 Out ->
-                    Port { pos = arrow.tailPoint, polarity = p }
+                    Port { pos = arrow.tailPoint, polarity = p, adjust = 0 }
 
         Port _ ->
             a
@@ -86,6 +88,7 @@ connect dx l r =
             Arrow
                 { tailPoint = a.tailPoint
                 , headPoint = { x = b.headPoint.x + dx, y = b.headPoint.y }
+                , adjust = a.adjust + b.adjust
                 , meander = Direct
                 }
 
@@ -93,6 +96,7 @@ connect dx l r =
             Arrow
                 { tailPoint = a.tailPoint
                 , headPoint = { x = b.pos.x + dx, y = b.pos.y }
+                , adjust = a.adjust + b.adjust
                 , meander = Direct
                 }
 
@@ -101,12 +105,14 @@ connect dx l r =
                 { tailPoint = a.pos
                 , headPoint = { x = b.headPoint.x + dx, y = b.headPoint.y }
                 , meander = Direct
+                , adjust = a.adjust + b.adjust
                 }
 
         ( Port a, Port b ) ->
             Arrow
                 { tailPoint = a.pos
                 , headPoint = { x = b.pos.x + dx, y = b.pos.y }
+                , adjust = a.adjust + b.adjust
                 , meander = Direct
                 }
 
@@ -134,13 +140,14 @@ headLength =
 init : Vec2 -> Vec2 -> Arrow
 init from to =
     if from == to then
-        Port { pos = from, polarity = In }
+        Port { pos = from, polarity = In, adjust = 0 }
 
     else
         Arrow
             { tailPoint = from
             , meander = Direct
             , headPoint = to
+            , adjust = 0
             }
 
 
@@ -203,6 +210,7 @@ forEdgeWith config side n e =
             { x = x2
             , y = 4 * toFloat n + Extent.computeCenterY e
             }
+        , adjust = 0
         }
 
 
@@ -217,6 +225,32 @@ meanderExtents m =
 
         Direct ->
             []
+
+
+safe : Polarity -> Vec2 -> Arrow -> Arrow
+safe _ t a =
+    case a of
+        Arrow s ->
+            Arrow
+                { s
+                    | adjust = t.x
+                }
+
+        Port p ->
+            Port { p | adjust = t.x }
+
+
+safeTo : Polarity -> Float -> Arrow -> Arrow
+safeTo _ x a =
+    case a of
+        Arrow s ->
+            Arrow
+                { s
+                    | adjust = x - s.tailPoint.x
+                }
+
+        Port p ->
+            Port { p | adjust = x - p.pos.x }
 
 
 translate : Vec2 -> Arrow -> Arrow

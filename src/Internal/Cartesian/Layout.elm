@@ -41,15 +41,21 @@ layout config c =
             case Bound.extentOf innerBound of
                 Just innerExtent ->
                     let
+                        -- Start Arrow builder stubs
                         inputArrows =
-                            NE.map (Arrow.truncate In) <|
-                                arrowsFor In interface innerExtent Arrow.forEdge
+                            stubsFor In interface innerExtent Arrow.forEdge
 
                         outArrows =
-                            NE.map (Arrow.truncate Out) <|
-                                arrowsFor Out interface innerExtent Arrow.forEdge
+                            stubsFor Out interface innerExtent Arrow.forEdge
                     in
-                    horizontalWithArrows inputArrows ( inner, innerExtent ) outArrows
+                    -- TODO Since the arrows are just points, we won't need to care about their extents here
+                    Layout
+                        { inArrows = inputArrows
+                        , wrapping = Nothing
+                        , contents = [ inner ]
+                        , outArrows = outArrows
+                        , extent = innerExtent
+                        }
 
                 _ ->
                     Empty
@@ -66,22 +72,16 @@ layout config c =
             case ( inner, innerBound ) of
                 ( Layout il, Just innerExtent ) ->
                     -- Line up the arrow stubs with the inner arrows
-                    let
-                        inputArrows =
-                            alignArrowStubs In il.inArrows
-
-                        outArrows =
-                            alignArrowStubs Out il.outArrows
-                    in
-                    horizontalWithArrows inputArrows ( inner, innerExtent ) outArrows
+                    Layout
+                        { inArrows = il.inArrows
+                        , wrapping = Nothing
+                        , contents = [ inner ]
+                        , outArrows = il.outArrows
+                        , extent = innerExtent
+                        }
 
                 _ ->
                     Empty
-
-
-alignArrowStubs : Polarity -> Nonempty Arrow -> Nonempty Arrow
-alignArrowStubs polarity arrows =
-    NE.map (Arrow.truncate polarity) arrows
 
 
 composeLayout : Config a -> C.Composed a -> Layout a
@@ -101,30 +101,46 @@ composeLayout config c =
 
         C.Sequenced l r ->
             let
-                a =
-                    layout config l
-
-                b =
-                    layout config r
-
-                hz =
-                    horizontal config [ a, b ]
+                pair =
+                    horizontal config
+                        ( layout config l
+                        , layout config r
+                        )
 
                 contents =
-                    List.concat <|
-                        List.map2 (tie 10) hz (List.drop 1 hz)
+                    tie 10 pair
 
-                innerBound =
-                    Bound.hull <| List.map boundOf contents
+                extents =
+                    Maybe.map (Tuple.mapBoth boundOf boundOf) contents
             in
-            case ( contents, Bound.extentOf innerBound ) of
-                ( [ Layout al, Layout bl ], Just innerExtent ) ->
+            case ( contents, extents ) of
+                ( Just ( Layout al, Layout bl ), Just ( Just extentA, Just extentB ) ) ->
+                    let
+                        hull =
+                            Extent.hull <| NE.Nonempty extentA [ extentB ]
+
+                        wallX polarity =
+                            case polarity of
+                                In ->
+                                    hull.lo.x
+
+                                Out ->
+                                    hull.hi.x
+
+                        safe polarity arrow =
+                            Arrow.safeTo polarity
+                                (wallX polarity)
+                                arrow
+
+                        safeArrows polarity arrows =
+                            NE.map (safe polarity) arrows
+                    in
                     Layout
-                        { inArrows = al.inArrows
+                        { inArrows = safeArrows In al.inArrows
                         , wrapping = Nothing
-                        , contents = contents
-                        , outArrows = bl.outArrows
-                        , extent = innerExtent
+                        , contents = [ Layout al, Layout bl ]
+                        , outArrows = safeArrows Out bl.outArrows
+                        , extent = hull
                         }
 
                 _ ->
@@ -133,20 +149,39 @@ composeLayout config c =
         C.Aside a b ->
             let
                 contents =
-                    vertical config [ layout config a, layout config b ]
+                    vertical config ( layout config a, layout config b )
 
                 extents =
-                    NE.fromList <|
-                        List.filterMap boundOf contents
+                    Tuple.mapBoth boundOf boundOf contents
             in
             case ( contents, extents ) of
-                ( [ Layout al, Layout bl ], Just ne ) ->
+                ( ( Layout al, Layout bl ), ( Just extentA, Just extentB ) ) ->
+                    let
+                        hull =
+                            Extent.hull <| NE.Nonempty extentA [ extentB ]
+
+                        displaceToAvoidCorner polarity selfExtent =
+                            case polarity of
+                                In ->
+                                    min (hull.lo.x - selfExtent.lo.x) 0
+
+                                Out ->
+                                    max (hull.hi.x - selfExtent.hi.x) 0
+
+                        safe polarity selfExtent arrow =
+                            Arrow.safe polarity
+                                (Vec2 (displaceToAvoidCorner polarity selfExtent) 0)
+                                arrow
+
+                        safeArrows polarity selfExtent arrows =
+                            NE.map (safe polarity selfExtent) arrows
+                    in
                     Layout
-                        { inArrows = NE.append al.inArrows bl.inArrows
+                        { inArrows = NE.append (safeArrows In extentA al.inArrows) (safeArrows In extentB bl.inArrows)
                         , wrapping = Nothing
-                        , contents = contents
-                        , outArrows = NE.append al.outArrows bl.outArrows
-                        , extent = Extent.hull ne
+                        , contents = [ Tuple.first contents, Tuple.second contents ]
+                        , outArrows = NE.append (safeArrows Out extentA al.outArrows) (safeArrows Out extentB bl.outArrows)
+                        , extent = hull
                         }
 
                 _ ->
@@ -206,38 +241,39 @@ composeLayout config c =
                     Empty
 
 
-arrowsFor :
+stubsFor :
     Polarity
     -> Interface
     -> Extent
     -> (Polarity -> Int -> Extent -> Arrow)
     -> Nonempty Arrow
-arrowsFor side interface innerExtent arrowPlacer =
-    case interface of
-        Unital ->
-            NE.singleton <| arrowPlacer side 0 innerExtent
+stubsFor polarity interface innerExtent arrowPlacer =
+    NE.map (Arrow.truncate polarity) <|
+        case interface of
+            Unital ->
+                NE.singleton <| arrowPlacer polarity 0 innerExtent
 
-        Arity arities ->
-            let
-                arity =
-                    case side of
-                        In ->
-                            arities.inp
+            Arity arities ->
+                let
+                    arity =
+                        case polarity of
+                            In ->
+                                arities.inp
 
-                        Out ->
-                            arities.out
+                            Out ->
+                                arities.out
 
-                arrow n =
-                    arrowPlacer side n innerExtent
-            in
-            NE.Nonempty (arrow 0) <| List.map arrow <| List.range 1 (arity - 1)
+                    arrow n =
+                        arrowPlacer polarity n innerExtent
+                in
+                NE.Nonempty (arrow 0) <| List.map arrow <| List.range 1 (arity - 1)
 
-        _ ->
-            NE.singleton <| Arrow.forEdgeWith { headLength = 2 } side 0 innerExtent
+            _ ->
+                NE.singleton <| Arrow.forEdgeWith { headLength = 2 } polarity 0 innerExtent
 
 
-tie : Float -> Layout a -> Layout a -> List (Layout a)
-tie dx a b =
+tie : Float -> ( Layout a, Layout a ) -> Maybe ( Layout a, Layout a )
+tie dx ( a, b ) =
     -- Connect the output ports of a to the inputs of b
     -- a and be are assumed to have been placed beside each other
     -- so the tie will wedge between them
@@ -249,20 +285,21 @@ tie dx a b =
 
                 ends =
                     lb.inArrows
-            in
-            let
+
                 shift =
                     { x = dx, y = 0 }
 
                 arrows =
                     NE.map2 (Arrow.connect dx) starts ends
             in
-            [ a |> updateOutArrows arrows
-            , translate shift b
-            ]
+            Just
+                ( a |> updateOutArrows arrows
+                , translate shift b
+                )
 
+        -- Leaf and Empty cannot tie to anything, as they have no interface (Arrows)
         _ ->
-            []
+            Nothing
 
 
 updateOutArrows : Nonempty Arrow -> Layout a -> Layout a
@@ -273,55 +310,6 @@ updateOutArrows arrows l =
 
         _ ->
             l
-
-
-{-| Layout input arrows and inner layout with outArrows
-
-The input is assumed to be relative to the inner layout extents
-and will be shifted right by the extent of the input arrows
-
--}
-horizontalWithArrows : Nonempty Arrow -> ( Layout a, Extent ) -> Nonempty Arrow -> Layout a
-horizontalWithArrows inputArrows ( inner, innerExtent ) outArrows =
-    -- TODO We seem to be overusing translate here, can we simplify?
-    let
-        inputArrowsBound =
-            Bound.hull <| List.map Arrow.boundOf <| NE.toList inputArrows
-
-        innerShift =
-            { x = Bound.width inputArrowsBound, y = 0 }
-
-        innerShifted =
-            Extent.translate innerShift innerExtent
-
-        outputArrowsBound =
-            Bound.hull <| List.map Arrow.boundOf <| NE.toList outArrows
-
-        outputArrowsExtentList =
-            case outputArrowsBound of
-                Just extent ->
-                    [ Extent.translate innerShift extent ]
-
-                _ ->
-                    []
-    in
-    Layout
-        { inArrows = NE.map (Arrow.translate innerShift) <| inputArrows
-        , wrapping = Nothing
-        , contents = [ translate innerShift inner ]
-        , outArrows = NE.map (Arrow.translate innerShift) <| outArrows
-        , extent =
-            case inputArrowsBound of
-                Just inputArrowsExtent ->
-                    Extent.hull <|
-                        NE.Nonempty (Extent.translate innerShift inputArrowsExtent)
-                            (innerShifted :: outputArrowsExtentList)
-
-                _ ->
-                    Extent.hull <|
-                        NE.Nonempty innerShifted
-                            outputArrowsExtentList
-        }
 
 
 translate : Vec2 -> Layout a -> Layout a
@@ -366,29 +354,25 @@ a
 b
 
 -}
-horizontal : Config a -> List (Layout a) -> List (Layout a)
-horizontal (Config config) items =
+horizontal : Config a -> ( Layout a, Layout a ) -> ( Layout a, Layout a )
+horizontal (Config config) ( a, b ) =
     let
-        bounds =
-            List.map boundOf items
+        boundA =
+            boundOf a
 
-        shiftByBound : Bound -> List Float -> List Float
-        shiftByBound b xs =
-            case ( b, xs ) of
-                ( Just extent, x :: _ ) ->
-                    x + Extent.width extent + config.spacing.x :: xs
+        boundB =
+            boundOf b
 
-                ( Just extent, [] ) ->
-                    [ Extent.width extent ]
+        shift =
+            case boundA of
+                Just extent ->
+                    Extent.width extent + config.spacing.x
 
                 _ ->
-                    [ 0 ]
-
-        positions =
-            List.reverse <| List.foldl shiftByBound [ 0 ] bounds
+                    0
 
         extents =
-            List.filterMap identity bounds
+            List.filterMap identity [ boundA, boundB ]
 
         maxHeight =
             Maybe.withDefault 0 <| List.maximum <| List.map Extent.height extents
@@ -397,7 +381,7 @@ horizontal (Config config) items =
             translate { x = x, y = 0 } <|
                 horizontallyCentered maxHeight sub
     in
-    List.map2 moveTo items positions
+    ( a, moveTo b shift )
 
 
 {-| Back to back vertical layout
@@ -407,29 +391,25 @@ This will center items along a horizontal
      c
 
 -}
-vertical : Config a -> List (Layout a) -> List (Layout a)
-vertical (Config config) items =
+vertical : Config a -> ( Layout a, Layout a ) -> ( Layout a, Layout a )
+vertical (Config config) ( a, b ) =
     let
-        bounds =
-            List.map boundOf items
+        boundA =
+            boundOf a
 
-        shiftByBound : Bound -> List Float -> List Float
-        shiftByBound b ys =
-            case ( b, ys ) of
-                ( Just extent, y :: _ ) ->
-                    y + Extent.height extent + config.spacing.y :: ys
+        boundB =
+            boundOf b
 
-                ( Just extent, [] ) ->
-                    [ Extent.height extent ]
+        shift =
+            case boundA of
+                Just extent ->
+                    Extent.height extent + config.spacing.y
 
                 _ ->
-                    [ 0 ]
-
-        positions =
-            List.reverse <| List.foldl shiftByBound [ 0 ] bounds
+                    0
 
         extents =
-            List.filterMap identity bounds
+            List.filterMap identity [ boundA, boundB ]
 
         maxRange =
             Maybe.withDefault 0 <|
@@ -439,7 +419,7 @@ vertical (Config config) items =
         moveTo sub v =
             translate { x = 0, y = v } <| verticallyCentered maxRange sub
     in
-    List.map2 moveTo items positions
+    ( a, moveTo b shift )
 
 
 horizontallyCentered : Float -> Layout b -> Layout b
