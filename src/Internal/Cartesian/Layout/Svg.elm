@@ -1,6 +1,6 @@
 module Internal.Cartesian.Layout.Svg exposing (layoutToSvgWithConfig)
 
-import Internal.Arrow as Arrow
+import Internal.Arrow as Arrow exposing (Arrow(..))
 import Internal.Box as Box
 import Internal.Cartesian.Layout exposing (..)
 import Internal.Svg as Svg
@@ -19,16 +19,18 @@ layoutToSvgWithConfig svgConfig cl =
         Layout l ->
             let
                 toArrow a =
-                    let
-                        ( t, adjust, h ) =
-                            Arrow.ends a
-                    in
-                    Arrow.arrow <|
-                        { label = ""
-                        , tail = t
-                        , adjust = adjust
-                        , head = h
-                        }
+                    case a of
+                        Arrow arr ->
+                            Arrow.arrow arr
+
+                        Port p ->
+                            -- maybe not?
+                            Arrow.arrow <|
+                                { tailPoint = p.pos
+                                , adjustTail = 0
+                                , adjustHead = 0
+                                , headPoint = p.pos
+                                }
 
                 inArrows =
                     NE.map toArrow <| l.inArrows

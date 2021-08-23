@@ -23,6 +23,8 @@ main =
             , seriesExample
             , parallelExample
             , joinExample
+            , simpleBypassExample
+            , bypassExample
             ]
 
 
@@ -99,6 +101,51 @@ joinExample =
         ]
 
 
+simpleBypassExample =
+    let
+        layoutConfig =
+            naiveLayoutConfig
+                |> Layout.setLeafExtent (bigBoxFor "b")
+    in
+    column []
+        [ row [ spacing 16 ]
+            [ text "Bypass example: "
+            , column []
+                [ el [] <| viewC layoutConfig Svg.forStringLabels simpleBypass
+                , text "View source"
+                ]
+            ]
+        ]
+
+
+bigBoxFor str label =
+    if label == str then
+        Bound.init <|
+            { lo = { x = 0, y = 0 }
+            , hi = { x = 400, y = 150 }
+            }
+
+    else
+        normalBound label
+
+
+bypassExample =
+    let
+        layoutConfig =
+            naiveLayoutConfig
+                |> Layout.setLeafExtent (bigBoxFor "b")
+    in
+    column []
+        [ row [ spacing 16 ]
+            [ text "Bypass example: "
+            , column []
+                [ el [] <| viewC layoutConfig Svg.forStringLabels bypass
+                , text "View source"
+                ]
+            ]
+        ]
+
+
 
 -- advancedSvgConfig =
 --     Svg.default
@@ -119,12 +166,18 @@ abc =
         |> C.before (C.init "c")
 
 
+axb =
+    C.init "a"
+        |> C.aside (C.init "b")
+
+
+bxa =
+    C.init "b"
+        |> C.aside (C.init "a")
+
+
 axb_cxd =
     let
-        axb =
-            C.init "a"
-                |> C.aside (C.init "b")
-
         cxd =
             C.init "c"
                 |> C.aside (C.init "d")
@@ -136,17 +189,47 @@ axb_cxd_e =
     axb_cxd |> C.before (C.initWith 2 1 "e")
 
 
+bypass =
+    let
+        source =
+            C.initWith 1 3 "src"
+
+        sink =
+            C.initWith 2 1 "sink"
+
+        extraLane =
+            C.init "bypass"
+
+        conduce =
+            axb_cxd_e |> C.aside extraLane
+    in
+    source |> C.before conduce |> C.before sink
+
+
+simpleBypass =
+    let
+        source =
+            C.initWith 1 3 "src"
+
+        sink =
+            C.initWith 1 1 "sink"
+    in
+    source |> C.before (sink |> C.aside bxa)
+
+
 naiveLayoutConfig =
     Layout.default
         |> Layout.setSpacing (Vec2.init 20 16)
-        |> Layout.setLeafExtent
-            (always
-                (Bound.init <|
-                    { lo = { x = 0, y = 0 }
-                    , hi = { x = 64, y = 48 }
-                    }
-                )
-            )
+        |> Layout.setLeafExtent normalBound
+
+
+normalBound =
+    always
+        (Bound.init <|
+            { lo = { x = 0, y = 0 }
+            , hi = { x = 64, y = 48 }
+            }
+        )
 
 
 viewDefault diagram =

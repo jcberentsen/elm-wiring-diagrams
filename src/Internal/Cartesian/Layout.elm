@@ -43,10 +43,10 @@ layout config c =
                     let
                         -- Start Arrow builder stubs
                         inputArrows =
-                            stubsFor In interface innerExtent Arrow.forEdge
+                            stubsFor In interface innerExtent Arrow.stubForEdge
 
                         outArrows =
-                            stubsFor Out interface innerExtent Arrow.forEdge
+                            stubsFor Out interface innerExtent Arrow.stubForEdge
                     in
                     -- TODO Since the arrows are just points, we won't need to care about their extents here
                     Layout
@@ -144,11 +144,13 @@ composeLayout config c =
                         displaceToAvoidCorner polarity selfExtent =
                             case polarity of
                                 In ->
-                                    min (hull.lo.x - selfExtent.lo.x) 0
+                                    hull.lo.x - selfExtent.lo.x
 
+                                -- min (hull.lo.x - selfExtent.lo.x) 0
                                 Out ->
-                                    max (hull.hi.x - selfExtent.hi.x) 0
+                                    hull.hi.x - selfExtent.hi.x
 
+                        -- max (hull.hi.x - selfExtent.hi.x) 0
                         safe polarity selfExtent arrow =
                             Arrow.safe polarity
                                 (Vec2 (displaceToAvoidCorner polarity selfExtent) 0)
