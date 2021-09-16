@@ -1,4 +1,4 @@
-# ![elm-wiring-diagrams](assets/png/logo.png)
+# ![elm-wiring-diagrams](https://github.com/jcberentsen/elm-wiring-diagrams/blob/main/assets/png/logo.png?raw=true)
 
 # elm-wiring-diagrams
 
