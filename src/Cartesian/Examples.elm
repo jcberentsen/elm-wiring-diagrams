@@ -1,5 +1,5 @@
 module Cartesian.Examples exposing
-    ( basicCell, a, b, c, d, abc, axb, bxa, axb_cxd, axb_cxd_e, bypass, simpleBypass
+    ( basicCell, a, b, c, d, abc, axb, bxa, axb_cxd, axb_cxd_e, bypass, simpleBypass, logo
     )
 
 
@@ -7,7 +7,7 @@ module Cartesian.Examples exposing
 
 ## Usage
 
-@docs basicCell, a, b, c, d, abc, axb, bxa, axb_cxd, axb_cxd_e, simpleBypass, bypass
+@docs basicCell, a, b, c, d, abc, axb, bxa, axb_cxd, axb_cxd_e, simpleBypass, bypass, logo
 
 -}
 import Cartesian as C exposing (C)
@@ -121,3 +121,11 @@ bypass =
             axb_cxd_e |> C.aside extraLane
     in
     source3 |> C.before conduce |> C.before sink2
+
+{-| The diagram for the package logo
+-}
+logo : C String
+logo =
+    C.init "elm"
+         |> C.before (C.init "wiring")
+         |> C.before (C.init "diagrams")

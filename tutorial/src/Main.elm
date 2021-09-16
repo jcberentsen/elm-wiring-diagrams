@@ -10,7 +10,7 @@ import Diagram.Layout.Config as Layout
 import Diagram.Svg as Diagram
 import Diagram.Svg.Config as Svg
 import Diagram.Vec2 as Vec2
-import Element exposing (Element, alignRight, centerY, column, el, fill, html, padding, paragraph, rgb255, row, spacing, text, width)
+import Element exposing (Element, alignRight, centerX, centerY, column, el, fill, html, padding, paragraph, rgb255, row, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -18,9 +18,10 @@ import Element.Region as Region
 
 
 main =
-    Element.layout [] <|
-        column [ spacing 48 ]
-            [ motivatingExample
+    Element.layout [ padding 16] <|
+        column [ spacing 48]
+            [ viewLogo
+            , motivatingExample
             , basicCellExample
             , stringLabelsExample
             , seriesExample
@@ -31,8 +32,12 @@ main =
             ]
 
 
+viewLogo =
+    el [ centerX ] <| viewInStyle logo
+
+
 motivatingExample =
-    column [ padding 16, spacing 16 ]
+    column [ spacing 16 ]
         [ column [ spacing 16 ]
             [ h 1 "Tutorial on creating Cartesian Diagrams"
             , h 2 "This tutorial will show you how to get from a simple diagram: "
@@ -150,7 +155,7 @@ viewInStyle diagram =
             naiveLayoutConfig
                 |> Layout.setLeafExtent (bigBoxFor "b")
     in
-    viewC layoutConfig Svg.forStringLabels bypass
+    viewC layoutConfig Svg.forStringLabels diagram
 
 
 bypassExample =
@@ -174,17 +179,18 @@ bypassExample =
 
 naiveLayoutConfig =
     Layout.default
-        |> Layout.setSpacing (Vec2.init 20 16)
+        |> Layout.setSpacing (Vec2.init 24 16)
         |> Layout.setLeafExtent normalBound
 
 
-normalBound =
-    always
-        (Bound.init <|
-            { lo = { x = 0, y = 0 }
-            , hi = { x = 64, y = 48 }
+normalBound l =
+    Bound.init <|
+        { lo = { x = 0, y = 0 }
+        , hi =
+            { x = max 64 (16 * toFloat (String.length l))
+            , y = 48
             }
-        )
+        }
 
 
 viewDefault diagram =
