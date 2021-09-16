@@ -9,6 +9,7 @@
         "Cartesian.Layout",
         "Cartesian.Layout.Svg",
         "Cartesian.Svg",
+        "Cartesian.Examples",
         "Diagram.Layout.Config",
         "Diagram.Svg.Config",
         "Diagram.Svg",

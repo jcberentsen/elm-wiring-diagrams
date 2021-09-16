@@ -1,6 +1,7 @@
 module Main exposing (..)
 
 import Cartesian as C
+import Cartesian.Examples exposing (..)
 import Cartesian.Layout as Layout
 import Cartesian.Layout.Svg as Layout
 import Cartesian.Svg as Svg
@@ -13,12 +14,14 @@ import Element exposing (Element, alignRight, centerY, column, el, fill, html, p
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
+import Element.Region as Region
 
 
 main =
     Element.layout [] <|
-        column [ spacing 32 ]
-            [ basicCellExample
+        column [ spacing 48 ]
+            [ motivatingExample
+            , basicCellExample
             , stringLabelsExample
             , seriesExample
             , parallelExample
@@ -28,15 +31,32 @@ main =
             ]
 
 
+motivatingExample =
+    column [ padding 16, spacing 16 ]
+        [ column [ spacing 16 ]
+            [ h 1 "Tutorial on creating Cartesian Diagrams"
+            , h 2 "This tutorial will show you how to get from a simple diagram: "
+            , viewDefault abc
+            , h 2 "to a larger stylish(tbd) interactive(tbd) diagram like this:"
+            , viewInStyle showOff
+            ]
+        ]
+
+
+showOff =
+    bypass
+
+
+h n =
+    el [ Region.heading n, Font.size (max 8 (48 - n * 6)) ] << text
+
+
 basicCellExample =
-    column
-        []
-        [ row [ spacing 16 ]
-            [ text "A basic cell: "
-            , column []
-                [ viewDefault basicCell
-                , text "View source"
-                ]
+    column [ padding 16, spacing 16 ]
+        [ column [ spacing 16 ]
+            [ h 1 "Basics: "
+            , text "Let's start with the simplest possible part, a cell. Think box"
+            , viewDefault basicCell
             ]
         , text "Notice the cell label is just '.' for now, as we haven't specified how to render the label yet (as Strings)"
         , text "Also the cell is a bit small, we'll get back to how to control sizing"
@@ -46,10 +66,9 @@ basicCellExample =
 stringLabelsExample =
     column []
         [ row [ spacing 16 ]
-            [ text "A basic cell with string labels: "
+            [ text "So let's render the cell label String: "
             , column []
                 [ viewC Layout.default Svg.forStringLabels basicCell
-                , text "View source"
                 ]
             ]
         , paragraph []
@@ -66,7 +85,6 @@ seriesExample =
             [ text "Cells in series: "
             , column []
                 [ el [] <| viewC naiveLayoutConfig Svg.forStringLabels abc
-                , text "View source"
                 ]
             ]
         ]
@@ -78,7 +96,6 @@ parallelExample =
             [ text "Cells in parallell: "
             , column []
                 [ el [] <| viewC naiveLayoutConfig Svg.forStringLabels axb_cxd
-                , text "View source"
                 ]
             ]
         ]
@@ -90,7 +107,6 @@ joinExample =
             [ text "Join paths: "
             , column []
                 [ el [] <| viewC naiveLayoutConfig Svg.forStringLabels axb_cxd_e
-                , text "View source"
                 ]
             ]
         , paragraph []
@@ -112,7 +128,6 @@ simpleBypassExample =
             [ text "Bypass example: "
             , column []
                 [ el [] <| viewC layoutConfig Svg.forStringLabels simpleBypass
-                , text "View source"
                 ]
             ]
         ]
@@ -129,19 +144,20 @@ bigBoxFor str label =
         normalBound label
 
 
-bypassExample =
+viewInStyle diagram =
     let
         layoutConfig =
             naiveLayoutConfig
                 |> Layout.setLeafExtent (bigBoxFor "b")
     in
+    viewC layoutConfig Svg.forStringLabels bypass
+
+
+bypassExample =
     column []
         [ row [ spacing 16 ]
             [ text "Bypass example: "
-            , column []
-                [ el [] <| viewC layoutConfig Svg.forStringLabels bypass
-                , text "View source"
-                ]
+            , viewInStyle bypass
             ]
         ]
 
@@ -154,67 +170,6 @@ bypassExample =
 --         |> Svg.withCellAttributesFunction cellAttributes
 --         |> Svg.withCellWrappingFunction cellWrapping
 --         |> Svg.withLabelPositionFunction cellTextAlignment
-
-
-basicCell =
-    C.init "Cell"
-
-
-abc =
-    C.init "a"
-        |> C.before (C.init "b")
-        |> C.before (C.init "c")
-
-
-axb =
-    C.init "a"
-        |> C.aside (C.init "b")
-
-
-bxa =
-    C.init "b"
-        |> C.aside (C.init "a")
-
-
-axb_cxd =
-    let
-        cxd =
-            C.init "c"
-                |> C.aside (C.init "d")
-    in
-    axb |> C.before cxd
-
-
-axb_cxd_e =
-    axb_cxd |> C.before (C.initWith 2 1 "e")
-
-
-bypass =
-    let
-        source =
-            C.initWith 1 3 "src"
-
-        sink =
-            C.initWith 2 1 "sink"
-
-        extraLane =
-            C.init "bypass"
-
-        conduce =
-            axb_cxd_e |> C.aside extraLane
-    in
-    source |> C.before conduce |> C.before sink
-
-
-simpleBypass =
-    let
-        source =
-            C.initWith 1 3 "src"
-
-        sink =
-            C.initWith 1 1 "sink"
-    in
-    source |> C.before (sink |> C.aside bxa)
 
 
 naiveLayoutConfig =

@@ -1,4 +1,7 @@
+# ![elm-wiring-diagrams](https://github.com/jcberentsen/assets/png/logo-600.png)
+
 # elm-wiring-diagrams
+
 Wiring diagrams
 
 This is an experimental package for creating wiring diagrams, inspired by <https://arxiv.org/pdf/2101.12046.pdf>
@@ -11,9 +14,12 @@ Diagrams are abstract, and needs to go through a Layout before rendering to Svg.
 ## Example usage
 
 ```elm
-import WiringDiagram exposing (inSequence)
-import WiringDiagram.Svg as Svg
-module WiringDiagram.Examples exposing (a,b,c)
+import Cartesian as C
+import Cartesian.Layout as Layout
+import Cartesian.Layout.Svg as Layout
+import Cartesian.Svg as Svg
+import Cartesian.Examples exposing (a,b,c)
 
-svg = Svg.diagramToSvg <| inSequence [ a, b, c ]
+svg = let diagram = a <| before b <| before c
+  in Svg.view smallViewort <| Svg.fromDiagram diagram
 ```

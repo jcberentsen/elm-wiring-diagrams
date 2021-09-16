@@ -1,11 +1,11 @@
-module Cartesian.Svg exposing (toSvg, toSvgWith, Styling)
+module Cartesian.Svg exposing (toSvg, toSvgWith, fromDiagram, Styling)
 
 {-| Convert a cartesian structure to Svg
 
 
 ## Usage
 
-@docs toSvg, toSvgWith, Styling
+@docs toSvg, toSvgWith, fromDiagram, Styling
 
 -}
 
@@ -35,6 +35,14 @@ toSvg =
             }
     in
     toSvgWith styling
+
+{-| An alias for toSvg
+
+    Svg.fromDiagram diagram
+-}
+
+fromDiagram : C a -> Svg msg
+fromDiagram = toSvg
 
 
 {-| A type for configuring Layout and Svg styling
