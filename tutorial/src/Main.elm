@@ -16,6 +16,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Region as Region
 
+-- https://ellie-app.com/fjxck9J4ktPa1
 
 main =
     Element.layout [ padding 16] <|
