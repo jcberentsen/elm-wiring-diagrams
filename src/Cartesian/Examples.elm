@@ -2,7 +2,8 @@ module Cartesian.Examples exposing (basicCell, a, b, c, d, abc, axb, bxa, axb_cx
 
 {-| Example Cartesian diagrams with String labels
 
-# ![elm-wiring-diagrams](https://github.com/jcberentsen/elm-wiring-diagrams/blob/main/assets/png/bypass.png?raw=true)
+# ![elm-wiring-diagrams](https://github.com/jcberentsen/elm-wiring-diagrams/blob/main/assets/png/logo.png?raw=true)
+# <img src="https://github.com/jcberentsen/elm-wiring-diagrams/blob/main/assets/png/bypass.png?raw=true" width="600">
 
 ## Usage
 
