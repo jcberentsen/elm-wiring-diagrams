@@ -2,7 +2,9 @@ module Cartesian.Examples exposing (basicCell, a, b, c, d, abc, axb, bxa, axb_cx
 
 {-| Example Cartesian diagrams with String labels
 
+
 # ![elm-wiring-diagrams](https://github.com/jcberentsen/elm-wiring-diagrams/blob/main/assets/png/bypass.png?raw=true)
+
 
 ## Usage
 
@@ -156,18 +158,21 @@ bypass : C String
 bypass =
     let
         source3 =
-            C.initWith 1 3 "src"
+            C.initWith 1 4 "src"
 
-        sink2 =
-            C.initWith 2 1 "sink"
+        sink4 =
+            C.initWith 3 1 "sink"
+
+        extraSrc =
+            C.initWith 0 1 "extra src"
 
         extraLane =
-            C.init "bypass"
+            C.init "bypass" |> C.aside extraSrc
 
         conduce =
             axb_cxd_e |> C.aside extraLane
     in
-    source3 |> C.before conduce |> C.before sink2
+    source3 |> C.before conduce |> C.before sink4
 
 
 {-| The diagram for the package logo

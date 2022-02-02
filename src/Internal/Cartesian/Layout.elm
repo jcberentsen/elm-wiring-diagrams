@@ -13,10 +13,10 @@ import List.Nonempty as NE exposing (Nonempty)
 
 type Layout a
     = Layout
-        { inArrows : Nonempty Arrow
+        { inArrows : List Arrow
         , wrapping : Maybe { value : a, extent : Extent }
         , contents : List (Layout a)
-        , outArrows : Nonempty Arrow
+        , outArrows : List Arrow
         , extent : Extent
         }
     | Leaf { value : a, extent : Extent }
@@ -114,7 +114,7 @@ composeLayout config c =
                                 arrow
 
                         safeArrows polarity arrows =
-                            NE.map (safe polarity) arrows
+                            List.map (safe polarity) arrows
                     in
                     Layout
                         { inArrows = safeArrows In al.inArrows
@@ -146,24 +146,22 @@ composeLayout config c =
                                 In ->
                                     hull.lo.x - selfExtent.lo.x
 
-                                -- min (hull.lo.x - selfExtent.lo.x) 0
                                 Out ->
                                     hull.hi.x - selfExtent.hi.x
 
-                        -- max (hull.hi.x - selfExtent.hi.x) 0
                         safe polarity selfExtent arrow =
                             Arrow.safe polarity
                                 (Vec2 (displaceToAvoidCorner polarity selfExtent) 0)
                                 arrow
 
                         safeArrows polarity selfExtent arrows =
-                            NE.map (safe polarity selfExtent) arrows
+                            List.map (safe polarity selfExtent) arrows
                     in
                     Layout
-                        { inArrows = NE.append (safeArrows In extentA al.inArrows) (safeArrows In extentB bl.inArrows)
+                        { inArrows = List.append (safeArrows In extentA al.inArrows) (safeArrows In extentB bl.inArrows)
                         , wrapping = Nothing
                         , contents = [ Tuple.first contents, Tuple.second contents ]
-                        , outArrows = NE.append (safeArrows Out extentA al.outArrows) (safeArrows Out extentB bl.outArrows)
+                        , outArrows = List.append (safeArrows Out extentA al.outArrows) (safeArrows Out extentB bl.outArrows)
                         , extent = hull
                         }
 
@@ -229,12 +227,12 @@ stubsFor :
     -> Interface
     -> Extent
     -> (Polarity -> Int -> Extent -> Arrow)
-    -> Nonempty Arrow
+    -> List Arrow
 stubsFor polarity interface innerExtent arrowPlacer =
-    NE.map (Arrow.truncate polarity) <|
+    List.map (Arrow.truncate polarity) <|
         case interface of
             Unital ->
-                NE.singleton <| arrowPlacer polarity 0 innerExtent
+                List.singleton <| arrowPlacer polarity 0 innerExtent
 
             Arity arities ->
                 let
@@ -249,10 +247,10 @@ stubsFor polarity interface innerExtent arrowPlacer =
                     arrow n =
                         arrowPlacer polarity n innerExtent
                 in
-                NE.Nonempty (arrow 0) <| List.map arrow <| List.range 1 (arity - 1)
+                List.map arrow <| List.range 0 (arity - 1)
 
             _ ->
-                NE.singleton <| Arrow.forEdgeWith { headLength = 2 } polarity 0 innerExtent
+                List.singleton <| Arrow.forEdgeWith { headLength = 2 } polarity 0 innerExtent
 
 
 tie : Float -> ( Layout a, Layout a ) -> Maybe ( Layout a, Layout a )
@@ -273,7 +271,7 @@ tie dx ( a, b ) =
                     { x = dx, y = 0 }
 
                 arrows =
-                    NE.map2 (Arrow.connect dx) starts ends
+                    List.map2 (Arrow.connect dx) starts ends
             in
             Just
                 ( a |> updateOutArrows arrows
@@ -285,7 +283,7 @@ tie dx ( a, b ) =
             Nothing
 
 
-updateOutArrows : Nonempty Arrow -> Layout a -> Layout a
+updateOutArrows : List Arrow -> Layout a -> Layout a
 updateOutArrows arrows l =
     case l of
         Layout ll ->
@@ -301,10 +299,10 @@ translate t ll =
         Layout l ->
             Layout
                 { l
-                    | inArrows = NE.map (Arrow.translate t) l.inArrows
+                    | inArrows = List.map (Arrow.translate t) l.inArrows
                     , wrapping = Maybe.map (\w -> { w | extent = Extent.translate t w.extent }) l.wrapping
                     , contents = List.map (translate t) l.contents
-                    , outArrows = NE.map (Arrow.translate t) l.outArrows
+                    , outArrows = List.map (Arrow.translate t) l.outArrows
                     , extent = Extent.map (Vec2.translate t) l.extent
                 }
 
@@ -493,8 +491,8 @@ countArrows ll =
             0
 
         Layout l ->
-            List.length (NE.toList l.inArrows)
-                + List.length (NE.toList l.outArrows)
+            List.length l.inArrows
+                + List.length l.outArrows
                 + List.sum (List.map countArrows l.contents)
 
 
@@ -508,6 +506,6 @@ countVisibleArrows ll =
             0
 
         Layout l ->
-            List.length (List.filter Arrow.isVisible <| NE.toList l.inArrows)
-                + List.length (List.filter Arrow.isVisible <| NE.toList l.outArrows)
+            List.length (List.filter Arrow.isVisible <| l.inArrows)
+                + List.length (List.filter Arrow.isVisible <| l.outArrows)
                 + List.sum (List.map countVisibleArrows l.contents)

@@ -33,10 +33,10 @@ layoutToSvgWithConfig svgConfig cl =
                                 }
 
                 inArrows =
-                    NE.map toArrow <| l.inArrows
+                    List.map toArrow <| l.inArrows
 
                 outArrows =
-                    NE.map toArrow <| l.outArrows
+                    List.map toArrow <| l.outArrows
 
                 toExterior wrapping =
                     Box.fromExtent (Just wrapping.value) wrapping.extent
@@ -45,7 +45,7 @@ layoutToSvgWithConfig svgConfig cl =
                     Maybe.map toExterior l.wrapping
 
                 arrows =
-                    NE.toList inArrows ++ NE.toList outArrows
+                    inArrows ++ outArrows
 
                 interior =
                     List.map (layoutToSvgWithConfig svgConfig) l.contents
