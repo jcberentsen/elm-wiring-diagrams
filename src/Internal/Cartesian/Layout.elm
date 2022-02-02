@@ -226,13 +226,13 @@ stubsFor :
     Polarity
     -> Interface
     -> Extent
-    -> (Polarity -> Int -> Extent -> Arrow)
+    -> (Polarity -> Int -> Int -> Extent -> Arrow)
     -> List Arrow
 stubsFor polarity interface innerExtent arrowPlacer =
     List.map (Arrow.truncate polarity) <|
         case interface of
             Unital ->
-                List.singleton <| arrowPlacer polarity 0 innerExtent
+                List.singleton <| arrowPlacer polarity 0 1 innerExtent
 
             Arity arities ->
                 let
@@ -245,12 +245,12 @@ stubsFor polarity interface innerExtent arrowPlacer =
                                 arities.out
 
                     arrow n =
-                        arrowPlacer polarity n innerExtent
+                        arrowPlacer polarity n arity innerExtent
                 in
                 List.map arrow <| List.range 0 (arity - 1)
 
             _ ->
-                List.singleton <| Arrow.forEdgeWith { headLength = 2 } polarity 0 innerExtent
+                List.singleton <| Arrow.forEdgeWith { headLength = 2 } polarity 0 1 innerExtent
 
 
 tie : Float -> ( Layout a, Layout a ) -> Maybe ( Layout a, Layout a )

@@ -159,16 +159,22 @@ extentOf a =
 {-| An arrow connecting to a given side of an extent
 The Arrow coordinates will be relative to the extent coordinate system
 -}
-stubForEdge : Polarity -> Int -> Extent -> Arrow
-stubForEdge polarity n e =
+stubForEdge : Polarity -> Int -> Int -> Extent -> Arrow
+stubForEdge polarity n ofCount e =
     let
         x =
             Extent.side polarity e
+
+        dy =
+            max 4 <| Extent.height e / toFloat (2 * ofCount)
+
+        scale =
+            toFloat n - (toFloat (ofCount - 1) / 2)
     in
     Port
         { pos =
             { x = x
-            , y = 4 * toFloat n + Extent.computeCenterY e
+            , y = dy * scale + Extent.computeCenterY e
             }
         , polarity = polarity
         , adjust = 0
@@ -182,9 +188,10 @@ forEdgeWith :
     Config
     -> Polarity
     -> Int
+    -> Int
     -> Extent
     -> Arrow
-forEdgeWith config side n e =
+forEdgeWith config side n ofCount e =
     let
         x =
             Extent.side side e
@@ -196,17 +203,23 @@ forEdgeWith config side n e =
 
                 Out ->
                     ( x, x + config.headLength )
+
+        dy =
+            max 4 <| Extent.height e / toFloat (2 * ofCount)
+
+        scale =
+            toFloat n - (toFloat (ofCount - 1) / 2)
     in
     Arrow
         { tailPoint =
             { x = x1
-            , y = 4 * toFloat n + Extent.computeCenterY e
+            , y = dy * scale + Extent.computeCenterY e
             }
         , adjustTail = 0
         , meander = Direct
         , headPoint =
             { x = x2
-            , y = 4 * toFloat n + Extent.computeCenterY e
+            , y = dy * scale + Extent.computeCenterY e
             }
         , adjustHead = 0
         }
